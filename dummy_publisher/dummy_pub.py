@@ -2,15 +2,17 @@
 
 import rospy
 
-from std_msgs.msg import Int8
+from communication_node.msg import comm_msg
 
 def publisher():
-    pub = rospy.Publisher('dummy_topic', Int8, queue_size=10)
+    pub = rospy.Publisher('dummy_topic', comm_msg, queue_size=10)
     rospy.init_node('dummy_node', anonymous=True)
     rate = rospy.Rate(10)
     while not rospy.is_shutdown():
-        strg = 40
-        pub.publish(strg)
+        msg = comm_msg()
+        msg.data = [0, 20, 20]
+        msg.ispvariant = True
+        pub.publish(msg)
         rate.sleep()
 
 if __name__ == '__main__':
