@@ -15,6 +15,24 @@ add_message_files (DIRECTORY msg FILES
   comm_msg.msg
 )
 
+include_directories(
+  include/
+  ${catkin_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
+  ${GAZEBO_INCLUDE_DIRS}
+  ${SDFormat_INCLUDE_DIRS}
+)
+
+link_directories(
+  ${Boost_LIBRARY_DIRS}
+  ${GAZEBO_LIBRARY_DIRS}
+  ${SDFormat_LIBRARY_DIRS}
+)
+add_executable(nodetest
+               src/nodetest.cpp)
+add_dependencies(nodetest communication_node_gencpp)
+target_link_libraries(nodetest ${catkin_LIBRARIES})
+
 generate_messages(DEPENDENCIES std_msgs)
 
 catkin_package(

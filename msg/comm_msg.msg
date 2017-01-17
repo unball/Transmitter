@@ -1,2 +1,3 @@
-int8[3] data
-bool ispvariant
+int8 menu
+int32 MotorA
+int32 MotorB

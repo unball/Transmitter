@@ -26,7 +26,7 @@ void messageCb( const communication_node::comm_msg& toggle_msg){
    msg = toggle_msg;
 }
 
-ros::Subscriber<communication_node::comm_msg> sub("dummy_topic", &messageCb );
+ros::Subscriber<communication_node::comm_msg> sub("radio_topic", &motorVel );
 
 void setup() {
   Serial.begin(19200);
