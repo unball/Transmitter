@@ -8,7 +8,9 @@
 
 #include <SPI.h> //for radio
 #include "RF24.h" // for radio
-
+#include <ros.h>
+#include <ArduinoHardware.h>
+#include <communication_node/comm_msg.h>
 /*************  USER Configuration *****************************/
 /***********radio***********/
 /*Radio pins*/
@@ -27,17 +29,22 @@ uint64_t pipeRecebe=pipes[0];
 
 
 ros::NodeHandle nh;
-communication_node::comm_msg velocidades;
 
-typedef struct{
+struct{
+  int data1;
+  int data2;
+}myData;
+
+struct{
   int motorA;
   int motorB;
 }velocidades;
+
 int menu;
 void motorVel( const communication_node::comm_msg& velocidadesdata){
    menu = velocidadesdata.menu;
-   velocidades.motorA = velocidadesdata.motorA;
-   velocidades.motorB = velocidadesdata.motorB;
+   velocidades.motorA = velocidadesdata.MotorA;
+   velocidades.motorB = velocidadesdata.MotorB;
 }
 
 ros::Subscriber<communication_node::comm_msg> sub("radio_topic", &motorVel );
@@ -47,19 +54,16 @@ String inString = "";
 
 
 void setup(void) {
-
-  Serial.begin(115200);
-  while(!Serial);
   
   radioSetup();
-
+  nh.getHardware()->setBaud(115200);
   nh.initNode();
   nh.subscribe(sub);
-  nh.advertise(pubs);
 }
 
 
 void loop(){
+  nh.spinOnce();
   switch (menu) {
       case 8:
       case 9:
@@ -115,8 +119,6 @@ void mandaVelocidades(){
   inString = "";
   Serial.println(velocidades.motorB);
 
-  velocidades.motorA*=-1;
-  velocidades.motorB*=-1;
   radio.stopListening();
   radio.enableDynamicAck();
   radio.write(&velocidades,sizeof(velocidades), 1);

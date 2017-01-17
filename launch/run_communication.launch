@@ -2,5 +2,6 @@
     <node name="dummy_publisher" pkg="communication_node" type="dummy_pub.py"/>
     <node name="arduino_node" pkg="rosserial_python" type="serial_node.py" >
         <param name="port" value="/dev/ttyUSB0"/>
+	<param name="baud" value="115200"/>
     </node>
 </launch>
