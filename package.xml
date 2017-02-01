@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>communication_node</name>
+  <name>communication</name>
   <version>0.0.0</version>
   <description>The communication_node package</description>
 

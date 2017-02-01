@@ -2,7 +2,7 @@
 
 import rospy
 
-from communication_node.msg import comm_msg
+from communication.msg import comm_msg
 
 
 def menu():

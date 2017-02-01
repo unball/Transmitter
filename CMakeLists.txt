@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(communication_node)
+project(communication)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -9,10 +9,12 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   rosserial_arduino
   rosserial_client
+  joy
 )
 
 add_message_files (DIRECTORY msg FILES
   comm_msg.msg
+  joy_msg.msg
 )
 
 include_directories(

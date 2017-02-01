@@ -1,0 +1,2 @@
+float32[2] x
+float32[2] y
