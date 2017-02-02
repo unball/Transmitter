@@ -11,6 +11,7 @@ def callback(data):
     msg.y[0] =  data.axes[1]*k
     msg.x[1] = -data.axes[2]*k
     msg.y[1] =  data.axes[3]*k
+
     pub.publish(msg)
 
 def start():
