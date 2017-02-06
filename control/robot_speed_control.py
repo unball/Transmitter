@@ -6,9 +6,11 @@ from math import pi
 from math import fabs
 
 Kp_lin = 1
-Kp_ang = 1
+Kp_ang = 0.01
 distance_threshold = 0.1
 angular_threshold = 0.1
+
+toDegree = False
 
 speeds = robot_speed_msg()
 
@@ -27,15 +29,19 @@ def reduceAngle(angle):
 	return angle
 
 def callback(vector):
+	distance = vector.y[0]
+	d_th = reduceAngle(pi/2 - atan2(vector.y[0], vector.x[0]))
+
 	global speeds
 	global distance_threshold
 	global angular_threshold
 
-	distance = vector.y[0]
-	d_th = reduceAngle(pi/2 - atan2(vector.y[0], vector.x[0]))
-
 	speeds.linear_vel = Pcontrol(Kp_lin, distance, distance_threshold)
-	speeds.angular_vel = Pcontrol(Kp_ang, d_th, angular_threshold)*180/pi
+	speeds.angular_vel = Pcontrol(Kp_ang, d_th, angular_threshold)
+
+	global toDegree
+	if toDegree == True:
+		speeds.angular_vel = speeds.angular_vel * 180/pi
 	
 def robot_speed_control_node():
 	global speeds

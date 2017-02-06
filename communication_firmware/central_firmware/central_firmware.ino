@@ -10,7 +10,7 @@
 #include "RF24.h" // for radio
 #include <ros.h>
 #include <ArduinoHardware.h>
-#include <communication_node/comm_msg.h>
+#include <communication/comm_msg.h>
 /*************  USER Configuration *****************************/
 /***********radio***********/
 /*Radio pins*/
