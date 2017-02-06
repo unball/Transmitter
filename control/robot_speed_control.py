@@ -5,7 +5,11 @@ from math import atan2
 from math import pi
 from math import fabs
 
+Kp_lin = 1
+Kp_ang = 1
 distance_threshold = 0.1
+angular_threshold = 0.1
+
 speeds = robot_speed_msg()
 
 def Pcontrol(Kp, error, threshold = 0):
@@ -13,20 +17,6 @@ def Pcontrol(Kp, error, threshold = 0):
 	if (fabs(error) > fabs(threshold)):
 		result = Kp * error
 	return result
-
-def getLinearVelocity(distance):
-	global distance_threshold
-	Kp = 1
-
-	linear_velocity = Pcontrol(Kp, distance, distance_threshold)
-	return linear_velocity
-
-def getAngularVelocity(d_th):
-	global distance_threshold
-	Kp = 1
-
-	angular_velocity = Pcontrol(Kp, d_th, distance_threshold)
-	return angular_velocity
 
 def reduceAngle(angle):
 	while (angle <= -pi):
@@ -38,12 +28,14 @@ def reduceAngle(angle):
 
 def callback(vector):
 	global speeds
+	global distance_threshold
+	global angular_threshold
 
 	distance = vector.y[0]
 	d_th = reduceAngle(pi/2 - atan2(vector.y[0], vector.x[0]))
 
-	speeds.linear_vel = getLinearVelocity(distance)
-	speeds.angular_vel = getAngularVelocity(d_th)*180/pi
+	speeds.linear_vel = Pcontrol(Kp_lin, distance, distance_threshold)
+	speeds.angular_vel = Pcontrol(Kp_ang, d_th, angular_threshold)*180/pi
 	
 def robot_speed_control_node():
 	global speeds
