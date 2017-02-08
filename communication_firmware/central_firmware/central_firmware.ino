@@ -41,13 +41,13 @@ struct{
 }velocidades;
 
 int menu;
-void motorVel( const communication_node::comm_msg& velocidadesdata){
+void motorVel( const communication::comm_msg& velocidadesdata){
    menu = velocidadesdata.menu;
    velocidades.motorA = velocidadesdata.MotorA;
    velocidades.motorB = velocidadesdata.MotorB;
 }
 
-ros::Subscriber<communication_node::comm_msg> sub("radio_topic", &motorVel );
+ros::Subscriber<communication::comm_msg> sub("radio_topic", &motorVel );
 
 String inString = ""; 
 /***************************************************************/

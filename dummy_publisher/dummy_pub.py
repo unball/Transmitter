@@ -3,7 +3,9 @@
 import rospy
 
 from communication.msg import comm_msg
+from communication.msg import wheels_speeds_msg
 
+msg = comm_msg()
 
 def menu():
     print("Menu:")
@@ -32,19 +34,29 @@ def getmotorVel(motor):
     else:
         return motorvel
 
+def publishSpeeds(wheels_speed):
+    global msg
+    msg.MotorA = (wheels_speed.right_vel*100)
+    msg.MotorB = (wheels_speed.left_vel*100)
+
 def publisher():
+    global msg
     pub = rospy.Publisher('radio_topic', comm_msg, queue_size=10)
     rospy.init_node('radio_topic', anonymous=True)
     rate = rospy.Rate(10)
+    rospy.Subscriber('wheels_speed', wheels_speeds_msg, publishSpeeds)
+
     try:
         while not rospy.is_shutdown():
-            msg = comm_msg()
-            msg.menu = menu()
-            if msg.menu == 8:
-                msg.MotorA = getmotorVel("A")
-                msg.MotorB = getmotorVel("B")
-            if msg.menu == 9:
-                pass
+            #msg = comm_msg()
+            #msg.menu = menu()
+            msg.menu = 8
+            #if msg.menu == 8:
+            #    msg.MotorA = getmotorVel("A")
+            #    msg.MotorB = getmotorVel("B")
+            #if msg.menu == 9:
+            #    pass
+            
             pub.publish(msg)
             rate.sleep()
     except rospy.ROSInterruptException:

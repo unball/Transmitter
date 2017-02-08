@@ -6,7 +6,7 @@ from math import pi
 from math import fabs
 
 Kp_lin = 1
-Kp_ang = 0.01
+Kp_ang = 1
 distance_threshold = 0.1
 angular_threshold = 0.1
 
