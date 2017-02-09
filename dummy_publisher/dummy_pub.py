@@ -36,8 +36,8 @@ def getmotorVel(motor):
 
 def publishSpeeds(wheels_speed):
     global msg
-    msg.MotorA = (wheels_speed.right_vel*100)
-    msg.MotorB = (wheels_speed.left_vel*100)
+    msg.MotorA = (wheels_speed.right_vel)*0.256
+    msg.MotorB = (wheels_speed.left_vel)*0.256
 
 def publisher():
     global msg

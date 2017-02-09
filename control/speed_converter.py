@@ -2,8 +2,8 @@ import rospy
 from communication.msg import robot_speed_msg
 from communication.msg import wheels_speeds_msg
 
-r = 1.0
-L = 1.0
+r = 0.035 #wheel radius in cm
+L = 0.075 #distance between wheels in cm
 
 speeds = wheels_speeds_msg()
 

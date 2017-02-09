@@ -5,8 +5,8 @@ from math import atan2
 from math import pi
 from math import fabs
 
-Kp_lin = 1
-Kp_ang = 1
+Kp_lin = 120/2
+Kp_ang = 1000/2
 distance_threshold = 0.1
 angular_threshold = 0.1
 
@@ -20,24 +20,22 @@ def Pcontrol(Kp, error, threshold = 0):
 		result = Kp * error
 	return result
 
-def reduceAngle(angle):
-	while (angle <= -pi):
-		angle += 2*pi
-	while (angle > pi):
-		angle -= 2*pi
-        
-	return angle
-
 def callback(vector):
 	distance = vector.y[0]
-	d_th = reduceAngle(pi/2 - atan2(vector.y[0], vector.x[0]))
+
+	dTh = 0
+	th = atan2(vector.y[0], vector.x[0])
+	if th > 0:
+		dTh = pi/2 - th
+	else:
+		dTh = -(pi/2 + th)
 
 	global speeds
 	global distance_threshold
 	global angular_threshold
 
-	speeds.linear_vel = Pcontrol(Kp_lin, distance, distance_threshold)
-	speeds.angular_vel = Pcontrol(Kp_ang, d_th, angular_threshold)
+	speeds.linear_vel = Pcontrol(Kp_lin, distance, distance_threshold) #in cm/s
+	speeds.angular_vel = Pcontrol(Kp_ang, dTh, angular_threshold) * fabs(vector.x[0])
 
 	global toDegree
 	if toDegree == True:
