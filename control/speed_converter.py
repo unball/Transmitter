@@ -1,33 +1,31 @@
+#!/usr/bin/env python
+
 import rospy
-from communication.msg import robot_speed_msg
+
+from communication.msg import comm_msg
 from communication.msg import wheels_speeds_msg
 
-r = 0.035 #wheel radius in cm
-L = 0.075 #distance between wheels in cm
+msg = comm_msg()
 
-speeds = wheels_speeds_msg()
+def publishSpeeds(wheels_speed):
+    global msg
+    msg.MotorA = (wheels_speed.right_vel[0])*0.256
+    msg.MotorB = (wheels_speed.left_vel[0])*0.256
 
-def processPosition(robot_speed):
-	global speeds
-	w1 = (robot_speed.linear_vel - (L/2)*robot_speed.angular_vel)/r
-	w2 = (robot_speed.linear_vel + (L/2)*robot_speed.angular_vel)/r
-	speeds.right_vel = w1
-	speeds.left_vel = w2
+def publisher():
+    global msg
+    pub = rospy.Publisher('radio_topic', comm_msg, queue_size=10)
+    rospy.init_node('speed_converter', anonymous=True)
+    rate = rospy.Rate(10)
+    rospy.Subscriber('wheels_speed', wheels_speeds_msg, publishSpeeds)
 
-def speed_converter_node():
-	rospy.init_node('speed_converter', anonymous=True)
-	rate = rospy.Rate(10)
-
-	pub = rospy.Publisher('wheels_speed', wheels_speeds_msg, queue_size=10)
-	rospy.Subscriber('robot_speed', robot_speed_msg, processPosition)
-
-	while not rospy.is_shutdown():
-		pub.publish(speeds)
-		rate.sleep()
-		pass
+    while not rospy.is_shutdown():
+        msg.menu = 8           
+        pub.publish(msg)
+        rate.sleep()
 
 if __name__ == '__main__':
     try:
-        speed_converter_node()
+        publisher()
     except rospy.ROSInterruptException:
         pass

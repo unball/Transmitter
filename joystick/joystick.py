@@ -1,23 +1,25 @@
 #!/usr/bin/env python
 import rospy
 from sensor_msgs.msg import Joy
-from communication.msg import joy_msg
+from communication.msg import target_positions_msg
 from subprocess import call
+
+number_of_robots = 3
 
 def callback(data):
     k = 1
-    msg = joy_msg()
-    msg.x = -data.axes[0]*k
-    msg.y =  data.axes[1]*k
+    msg = target_positions_msg()
+
+    for robot in range(number_of_robots):
+        msg.x[robot] = -data.axes[0]*k
+        msg.y[robot] =  data.axes[1]*k
 
     pub.publish(msg)
 
 def start():
         global pub
-        pub = rospy.Publisher('joystick_cvt',joy_msg, queue_size=10)
-        # subscribed to joystick inputs on topic "joy"
+        pub = rospy.Publisher('target_positions_topic',target_positions_msg, queue_size=10)
         rospy.Subscriber('joy', Joy, callback)
-        # starts the node
         rospy.init_node('joystick')
         rospy.spin()
 

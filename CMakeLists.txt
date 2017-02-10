@@ -14,9 +14,9 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_message_files (DIRECTORY msg FILES
   comm_msg.msg
-  joy_msg.msg
+  target_positions_msg.msg
   wheels_speeds_msg.msg
-  robot_speed_msg.msg
+  robots_speeds_msg.msg
 )
 
 include_directories(
