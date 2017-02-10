@@ -7,10 +7,8 @@ from subprocess import call
 def callback(data):
     k = 1
     msg = joy_msg()
-    msg.x[0] = -data.axes[0]*k
-    msg.y[0] =  data.axes[1]*k
-    msg.x[1] = -data.axes[2]*k
-    msg.y[1] =  data.axes[3]*k
+    msg.x = -data.axes[0]*k
+    msg.y =  data.axes[1]*k
 
     pub.publish(msg)
 

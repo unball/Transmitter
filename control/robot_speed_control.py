@@ -20,26 +20,20 @@ def Pcontrol(Kp, error, threshold = 0):
 		result = Kp * error
 	return result
 
-def callback(vector):
-	distance = vector.y[0]
-
-	dTh = 0
-	th = atan2(vector.y[0], vector.x[0])
+def calculateErrorAngle(y, x):
+	th = atan2(y, x)
 	if th > 0:
-		dTh = pi/2 - th
+		return pi/2 - th
 	else:
-		dTh = -(pi/2 + th)
+		return -(pi/2 + th)
 
-	global speeds
-	global distance_threshold
-	global angular_threshold
+def calculate_robot_speeds(vector):
+	distance = vector.y
+
+	dTh = calculateErrorAngle(vector.y, vector.x)
 
 	speeds.linear_vel = Pcontrol(Kp_lin, distance, distance_threshold) #in cm/s
-	speeds.angular_vel = Pcontrol(Kp_ang, dTh, angular_threshold) * fabs(vector.x[0])
-
-	global toDegree
-	if toDegree == True:
-		speeds.angular_vel = speeds.angular_vel * 180/pi
+	speeds.angular_vel = Pcontrol(Kp_ang, dTh, angular_threshold) * fabs(vector.x)
 	
 def robot_speed_control_node():
 	global speeds
@@ -48,7 +42,7 @@ def robot_speed_control_node():
 	rate = rospy.Rate(10)
 
 	pub = rospy.Publisher('robot_speed', robot_speed_msg, queue_size=10)
-	rospy.Subscriber('joystick_cvt', joy_msg, callback)
+	rospy.Subscriber('joystick_cvt', joy_msg, calculate_robot_speeds)
 
 	while not rospy.is_shutdown():
 		pub.publish(speeds)

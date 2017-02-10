@@ -1,2 +1,2 @@
-float32[2] x
-float32[2] y
+float32 x
+float32 y
