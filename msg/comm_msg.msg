@@ -1,3 +1,3 @@
 int8 menu
-int32 MotorA
-int32 MotorB
+int32[3] MotorA
+int32[3] MotorB

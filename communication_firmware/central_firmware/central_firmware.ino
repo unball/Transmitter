@@ -3,9 +3,6 @@
  *  Usando a ideia de cross coupling control
   */
 
-  
-
-
 #include <SPI.h> //for radio
 #include "RF24.h" // for radio
 #include <ros.h>
@@ -18,10 +15,8 @@
 //int CS = A0; //pro micro
 int CE = 3; //nano
 int CS = 2; //nano
-
                            
 RF24 radio(CE,CS);                        // Set up nRF24L01 radio on SPI bus plus pins 3 & 2 for nano
-
 
 const uint64_t pipes[2] = { 0xABCDABCD71LL, 0x544d52687CLL };   // Radio pipe addresses for the 2 nodes to communicate.
 uint64_t pipeEnvia=pipes[1];
@@ -31,11 +26,6 @@ uint64_t pipeRecebe=pipes[0];
 ros::NodeHandle nh;
 
 struct{
-  int data1;
-  int data2;
-}myData;
-
-struct{
   int motorA;
   int motorB;
 }velocidades;
@@ -43,11 +33,11 @@ struct{
 int menu;
 void motorVel( const communication::comm_msg& velocidadesdata){
    menu = velocidadesdata.menu;
-   velocidades.motorA = velocidadesdata.MotorA;
-   velocidades.motorB = velocidadesdata.MotorB;
+   velocidades.motorA = velocidadesdata.MotorA[0];
+   velocidades.motorB = velocidadesdata.MotorB[0];
 }
 
-ros::Subscriber<communication::comm_msg> sub("radio_topic", &motorVel );
+ros::Subscriber<communication::comm_msg> sub("radio_topic", &motorVel);
 
 String inString = ""; 
 /***************************************************************/
@@ -123,29 +113,6 @@ void mandaVelocidades(){
   radio.enableDynamicAck();
   radio.write(&velocidades,sizeof(velocidades), 1);
   radio.startListening();
-}
-void recebeMensagem(){
-   if(radio.available()){
-     while(radio.available()){       
-      radio.read(&myData,sizeof(myData));
-     }
-     Serial.print("mensagem: ");
-     Serial.println(myData.data1);
-   }
-}
-
-void mandaMensagem(){
-  Serial.println("Escreva 1 caractere");
-  while(!Serial.available());
-  
-  char c = toupper(Serial.read());
-  myData.data1=c;
-  radio.stopListening();
-  radio.enableDynamicAck();                 //essa funcao precisa andar colada na de baixo
-  radio.write(&myData,sizeof(myData), 1);   //lembrar que precisa enableDynamicAck antes
-                                            // 1-NOACK, 0-ACK
-  radio.startListening(); 
-  Serial.println(c);
 }
 
 void radio_status(){

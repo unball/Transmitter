@@ -27,7 +27,7 @@ def calculateErrorAngle(y, x):
 
 def calculate_robot_speeds(vector):
 	for robot in range(number_of_robots):
-		distance = vector.y[robot]
+		distance = vector.y[robot] #could use the magnitude of the vector. it's a different behaviour, though
 		dTh = calculateErrorAngle(vector.y[robot], vector.x[robot])
 
 		linear_vel = Pcontrol(Kp_lin, distance, distance_threshold) #in cm/s
