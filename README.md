@@ -35,6 +35,6 @@ Run `roslaunch communication_node run_communication.launch`
 * Terminal 7: `rostopic echo /joy`
 * Terminal 8: `rostopic echo /target_positions_topic`
 * Terminal 9: `rostopic echo /robots_speeds`
-* Terminal 10: `rostopic echo /wheels_speeds_msg`
+* Terminal 10: `rostopic echo /radio_topic`
 * Terminal 11: `rostopic echo /comm_msg`
 
