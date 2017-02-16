@@ -9,6 +9,7 @@ Communication repository for @unball
 2. If you don't have installed rosserial and joy, follow this steps:
 	
 	* run `sudo apt-get install ros-<rosdistro>-rosserial-arduino`
+	* run `sudo apt-get install ros-<rosdistro>-rosserial`
 	* run `sudo apt-get install ros-<rosdistro>-joy`
 
 
