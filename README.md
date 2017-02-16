@@ -18,7 +18,7 @@ Communication repository for @unball
 
 ##Running
 
-Run `roslaunch communication_node run_communication.launch`
+Run `roslaunch communication run_communication.launch`
 
 
 ##Launching the whole program with the joystick
