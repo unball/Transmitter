@@ -1,8 +1,3 @@
-/**********FIRMWARE PARA ESTUDO EM CONTROLE***********/
-/* http://www-personal.umich.edu/~johannb/Papers/paper43.pdf
- *  Usando a ideia de cross coupling control
-  */
-
 #include <SPI.h> //for radio
 #include "RF24.h" // for radio
 #include <ros.h>
@@ -16,25 +11,26 @@
 int CE = 3; //nano
 int CS = 2; //nano
                            
-RF24 radio(CE,CS);                        // Set up nRF24L01 radio on SPI bus plus pins 3 & 2 for nano
+RF24 radio(CE,CS);
 
-const uint64_t pipes[2] = { 0xABCDABCD71LL, 0x544d52687CLL };   // Radio pipe addresses for the 2 nodes to communicate.
-uint64_t pipeEnvia=pipes[1];
+const uint64_t pipes[4] = { 0xABCDABCD71LL, 0x544d52687CLL , 0x644d52687CLL, 0x744d52687CLL};
+uint64_t pipeEnvia=pipes[3];
 uint64_t pipeRecebe=pipes[0];
-
 
 ros::NodeHandle nh;
 
 struct{
   int motorA;
   int motorB;
-}velocidades;
+}velocidades[3];
 
 int menu;
 void motorVel( const communication::comm_msg& velocidadesdata){
    menu = velocidadesdata.menu;
-   velocidades.motorA = velocidadesdata.MotorA[0];
-   velocidades.motorB = velocidadesdata.MotorB[0];
+   for (int i=0; i<3; i++) {
+    velocidades[i].motorA = velocidadesdata.MotorA[i];
+    velocidades[i].motorB = velocidadesdata.MotorB[i];
+   }
 }
 
 ros::Subscriber<communication::comm_msg> sub("radio_topic", &motorVel);
@@ -42,9 +38,7 @@ ros::Subscriber<communication::comm_msg> sub("radio_topic", &motorVel);
 String inString = ""; 
 /***************************************************************/
 
-
 void setup(void) {
-  
   radioSetup();
   nh.getHardware()->setBaud(115200);
   nh.initNode();
@@ -54,22 +48,7 @@ void setup(void) {
 
 void loop(){
   nh.spinOnce();
-  switch (menu) {
-      case 8:
-      case 9:
-        repeteVelocidade();
-        break;
-      
-  }
-}
-
-void mandaVelocidadeZero(){
-  velocidades.motorA=0;
-  velocidades.motorB=0;
-  radio.stopListening();
-  radio.enableDynamicAck();
-  radio.write(&velocidades,sizeof(velocidades), 1);
-  radio.startListening();
+  repeteVelocidade();
 }
 
 void repeteVelocidade(){
@@ -77,74 +56,6 @@ void repeteVelocidade(){
   radio.enableDynamicAck();
   radio.write(&velocidades,sizeof(velocidades), 1);
   radio.startListening();
-}
-
-void mandaVelocidades(){
-  Serial.print("Velocidade motor A:");
-  while(!Serial.available());
-  while (Serial.available() > 0) {
-    int inChar = Serial.read();
-    if (isDigit(inChar)) {
-      // convert the incoming byte to a char
-      // and add it to the string:
-      inString += (char)inChar;
-    }
-    delay(30);
-  }
-  velocidades.motorA=inString.toInt();
-  Serial.println(velocidades.motorA);
-  inString = "";
-  Serial.print("Velocidade motor B:");
-  while(!Serial.available());
-  while (Serial.available() > 0) {
-    int inChar = Serial.read();
-    if (isDigit(inChar)) {
-      // convert the incoming byte to a char
-      // and add it to the string:
-      inString += (char)inChar;
-    }
-    delay(30);
-  }
-  velocidades.motorB=inString.toInt();
-  inString = "";
-  Serial.println(velocidades.motorB);
-
-  radio.stopListening();
-  radio.enableDynamicAck();
-  radio.write(&velocidades,sizeof(velocidades), 1);
-  radio.startListening();
-}
-
-void radio_status(){
-  Serial.print("CE: ");
-  Serial.println(CE);
-  Serial.print("CS: ");
-  Serial.println(CS);
-  
-  Serial.print("Channel: ");
-  Serial.print(radio.getChannel());
-  Serial.println("  0-125");
-  Serial.print("PALevel: ");
-  Serial.print(radio.getPALevel());
-  Serial.println("  0-3");
-  Serial.print("DataRate: ");
-  Serial.print(radio.getDataRate());
-  Serial.println("  0->1MBPS, 1->2MBPS, 2->250KBPS");
-  Serial.println();
-  Serial.print("Enviar por: ");
-  Serial.println(int(pipeEnvia));
-  Serial.print("Recebe por: ");
-  Serial.println(int(pipeRecebe));
-  Serial.print("Payload size: ");
-  Serial.println(radio.getPayloadSize());
-   
-
-}
-
-void plataforma(){
-  Serial.println("Plataforma arduino nano");
-  unsigned long time=millis();
-  Serial.println(time);
 }
 
 void radioSetup(){
@@ -157,9 +68,7 @@ void radioSetup(){
   radio.openReadingPipe(1,pipeRecebe);      //escuta pelo pipe1
 
   radio.enableDynamicPayloads();           //ativa payloads dinamicos(pacote tamamhos diferentes do padrao)
-  radio.setPayloadSize(sizeof(velocidades));   //ajusta os o tamanho dos pacotes ao tamanho da mensagem
+  radio.setPayloadSize(sizeof(velocidades[0]));   //ajusta os o tamanho dos pacotes ao tamanho da mensagem
   
   radio.startListening();                 // Start listening
 }
-
-

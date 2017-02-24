@@ -44,8 +44,8 @@ def publisher():
             msg = comm_msg()
             msg.menu = menu()
             if msg.menu == 8:
-                msg.MotorA = getmotorVel("A")
-                msg.MotorB = getmotorVel("B")
+                msg.MotorA[0] = getmotorVel("A")
+                msg.MotorB[0] = getmotorVel("B")
             if msg.menu == 9:
                 pass
             
