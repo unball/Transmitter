@@ -33,7 +33,7 @@ def calculate_robot_speeds(vector):
 		linear_vel = Pcontrol(Kp_lin, distance, distance_threshold) #in cm/s
 		angular_vel = Pcontrol(Kp_ang, dTh, angular_threshold) * fabs(vector.x[robot])
 
-		speeds.linear_vel[robot] = linear_vel
+		speeds.linear_vel[robot] = linear_vel / 100.0
 		speeds.angular_vel[robot] = angular_vel
 	
 def robot_speed_control_node():

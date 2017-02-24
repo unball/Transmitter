@@ -32,10 +32,9 @@ link_directories(
   ${GAZEBO_LIBRARY_DIRS}
   ${SDFormat_LIBRARY_DIRS}
 )
-add_executable(nodetest
-               src/nodetest.cpp)
-add_dependencies(nodetest communication_node_gencpp)
-target_link_libraries(nodetest ${catkin_LIBRARIES})
+
+
+
 
 generate_messages(DEPENDENCIES std_msgs)
 
