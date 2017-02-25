@@ -19,10 +19,12 @@ uint64_t pipeRecebe=pipes[0];
 
 ros::NodeHandle nh;
 
-struct{
+struct Velocidade{
   int motorA;
   int motorB;
-}velocidades[3];
+};
+
+Velocidade velocidades[3];
 
 int menu;
 void motorVel( const communication::comm_msg& velocidadesdata){
@@ -56,7 +58,7 @@ void repeteVelocidade(){
   radio.enableDynamicAck();
   for (int i=0; i<3; i++) {
     radio.openWritingPipe(pipes[1+i]);
-    radio.write(&velocidades,sizeof(velocidades), 1);    
+    radio.write(&velocidades[i],sizeof(velocidades[i]), 1);    
   }
   radio.startListening();
 }
