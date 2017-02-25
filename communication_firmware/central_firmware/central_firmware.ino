@@ -14,7 +14,7 @@ int CS = 2; //nano
 RF24 radio(CE,CS);
 
 const uint64_t pipes[4] = { 0xABCDABCD71LL, 0x544d52687CLL , 0x644d52687CLL, 0x744d52687CLL};
-uint64_t pipeEnvia=pipes[3];
+uint64_t pipeEnvia=pipes[1];
 uint64_t pipeRecebe=pipes[0];
 
 ros::NodeHandle nh;
@@ -54,7 +54,10 @@ void loop(){
 void repeteVelocidade(){
   radio.stopListening();
   radio.enableDynamicAck();
-  radio.write(&velocidades,sizeof(velocidades), 1);
+  for (int i=0; i<3; i++) {
+    radio.openWritingPipe(pipes[1+i]);
+    radio.write(&velocidades,sizeof(velocidades), 1);    
+  }
   radio.startListening();
 }
 
@@ -64,7 +67,6 @@ void radioSetup(){
   radio.setPALevel(RF24_PA_MAX);           //usa potencia maxima
   radio.setDataRate(RF24_2MBPS);           //usa velocidade maxima
 
-  radio.openWritingPipe(pipeEnvia);        //escreve pelo pipe0
   radio.openReadingPipe(1,pipeRecebe);      //escuta pelo pipe1
 
   radio.enableDynamicPayloads();           //ativa payloads dinamicos(pacote tamamhos diferentes do padrao)
