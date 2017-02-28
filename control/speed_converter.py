@@ -8,7 +8,7 @@ from communication.msg import wheels_speeds_msg
 msg = comm_msg()
 number_of_robots = 3
 
-convertion = (1/360) * (512 * 19) / 100
+convertion = (512) / 100
 
 def publishSpeeds(wheels_speed):
     global msg

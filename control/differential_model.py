@@ -1,8 +1,9 @@
 import rospy
+from math import pi
 from communication.msg import robots_speeds_msg
 from communication.msg import wheels_speeds_msg
 
-wheel_reduction = 3 / 1 #motor -> wheel
+wheel_reduction = 3*19/ 1 #motor -> wheel
 r = 0.035 #wheel radius in m
 L = 0.075 #distance between wheels in m
 
@@ -25,12 +26,16 @@ def normalize(w1, w2):
 #Returns the speed the MOTOR will have to spin in degree/s
 def processPosition(robot_speed):
 	for robot in range(number_of_robots):
-		w1 = (robot_speed.linear_vel[robot] - (L/2)*robot_speed.angular_vel[robot]) / (r/wheel_reduction)
-		w2 = (robot_speed.linear_vel[robot] + (L/2)*robot_speed.angular_vel[robot]) / (r/wheel_reduction)
-		if w1 > max_motor_speed or w2 > max_motor_speed:
-			w1, w2 = normalize(w1, w2)
-		speeds.right_vel[robot] = w1
-		speeds.left_vel[robot] = w2
+		wheel_radian1 = (robot_speed.linear_vel[robot] - (L/2)*robot_speed.angular_vel[robot]) / r
+		wheel_radian2 = (robot_speed.linear_vel[robot] + (L/2)*robot_speed.angular_vel[robot]) / r
+		wheel_rotations1 = wheel_radian1 / (2 * pi)
+		wheel_rotations2 = wheel_radian2 / (2 * pi)
+		motor_rotations1 = wheel_rotations1 * wheel_reduction
+		motor_rotations2 = wheel_rotations2 * wheel_reduction
+		#if w1 > max_motor_speed or w2 > max_motor_speed:
+		#	w1, w2 = normalize(w1, w2)
+		speeds.right_vel[robot] = motor_rotations1
+		speeds.left_vel[robot] = motor_rotations2
 
 def differential_model_node():
 	global speeds
