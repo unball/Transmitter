@@ -8,12 +8,14 @@ from communication.msg import wheels_speeds_msg
 msg = comm_msg()
 number_of_robots = 3
 
+convertion = (1/360) * (512 * 19) / 100
+
 def publishSpeeds(wheels_speed):
     global msg
 
     for robot in range(number_of_robots):
-        msg.MotorA[robot] = (wheels_speed.right_vel[robot])*0.256
-        msg.MotorB[robot] = (wheels_speed.left_vel[robot])*0.256
+        msg.MotorA[robot] = (wheels_speed.right_vel[robot]) * convertion
+        msg.MotorB[robot] = (wheels_speed.left_vel[robot]) * convertion
 
 def publisher():
     global msg

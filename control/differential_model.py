@@ -2,15 +2,33 @@ import rospy
 from communication.msg import robots_speeds_msg
 from communication.msg import wheels_speeds_msg
 
-r = 0.035 #wheel radius in cm
-L = 0.075 #distance between wheels in cm
+wheel_reduction = 3 / 1 #motor -> wheel
+r = 0.035 #wheel radius in m
+L = 0.075 #distance between wheels in m
+
+max_tics_per_s = 70000 #equivalent to 700 tics/10ms
+encoder_resolution = 512 * 19
+max_motor_speed = (max_tics_per_s * 360) / encoder_resolution #in degree_per_second
 
 number_of_robots = 3
 
+def normalize(w1, w2):
+	if w1 >= w2:
+		w2 = max_motor_speed * w2/w1
+		w1 = max_motor_speed
+	else:
+		w1 = max_motor_speed * w1/w2
+		w2 = max_motor_speed
+
+	return w1, w2	
+
+#Returns the speed the MOTOR will have to spin in degree/s
 def processPosition(robot_speed):
 	for robot in range(number_of_robots):
-		w1 = (robot_speed.linear_vel[robot] - (L/2)*robot_speed.angular_vel[robot])/r
-		w2 = (robot_speed.linear_vel[robot] + (L/2)*robot_speed.angular_vel[robot])/r
+		w1 = (robot_speed.linear_vel[robot] - (L/2)*robot_speed.angular_vel[robot]) / (r/wheel_reduction)
+		w2 = (robot_speed.linear_vel[robot] + (L/2)*robot_speed.angular_vel[robot]) / (r/wheel_reduction)
+		if w1 > max_motor_speed or w2 > max_motor_speed:
+			w1, w2 = normalize(w1, w2)
 		speeds.right_vel[robot] = w1
 		speeds.left_vel[robot] = w2
 
