@@ -7,7 +7,7 @@ from math import fabs
 
 #Control constants
 Kp_lin = 1
-Kp_ang = 1
+Kp_ang = 3
 distance_threshold = 0
 angular_threshold = 0
 
@@ -28,6 +28,9 @@ def Pcontrol(Kp, error, threshold = 0):
 
 #return: in Degrees
 def calculateErrorAngle(y, x):
+	if x==0 and y==0:
+		return 0
+
 	th = atan2(y, x)
 	if th > 0:
 		return (pi/2 - th)
@@ -36,12 +39,12 @@ def calculateErrorAngle(y, x):
 
 def calculate_robot_speeds(vector):
 	for robot in range(number_of_robots):
-		distance = 0#vector.y[robot] #could use the magnitude of the vector. it's a different behaviour, though
+		distance = vector.y[robot] #could use the magnitude of the vector. it's a different behaviour, though
 		distance = saturation(distance)
-		dTh = pi/2#calculateErrorAngle(vector.y[robot], vector.x[robot])
+		dTh = calculateErrorAngle(vector.y[robot], vector.x[robot])
 
-		linear_vel = Pcontrol(Kp_lin, distance, distance_threshold) #in cm/s
-		angular_vel = Pcontrol(Kp_ang, dTh, angular_threshold)#*vector.x[robot]
+		linear_vel = Pcontrol(Kp_lin, distance, distance_threshold)
+		angular_vel = Pcontrol(Kp_ang, dTh, angular_threshold)
 
 		speeds.linear_vel[robot] = linear_vel
 		speeds.angular_vel[robot] = angular_vel

@@ -1,25 +1,26 @@
 import rospy
 from math import pi
+from math import fabs
 from communication.msg import robots_speeds_msg
 from communication.msg import wheels_speeds_msg
 
-wheel_reduction = 3*19/ 1 #motor -> wheel
+wheel_reduction = 3/ 1 #motor -> wheel
 r = 0.035 #wheel radius in m
 L = 0.075 #distance between wheels in m
 
 max_tics_per_s = 70000 #equivalent to 700 tics/10ms
-encoder_resolution = 512 * 19
-max_motor_speed = (max_tics_per_s * 360) / encoder_resolution #in degree_per_second
+encoder_resolution = 512*19
+max_motor_speed = (max_tics_per_s) / encoder_resolution 
 
 number_of_robots = 3
 
 def normalize(w1, w2):
-	if w1 >= w2:
-		w2 = max_motor_speed * w2/w1
-		w1 = max_motor_speed
-	else:
-		w1 = max_motor_speed * w1/w2
-		w2 = max_motor_speed
+	if fabs(w1) >= fabs(w2):
+		w2 = max_motor_speed * w2/fabs(w1)
+		w1 = max_motor_speed * w1/fabs(w1)
+	elif fabs(w2) >= fabs(w1):
+		w1 = max_motor_speed * w1/fabs(w2)
+		w2 = max_motor_speed * w2/fabs(w2)
 
 	return w1, w2	
 
@@ -32,8 +33,8 @@ def processPosition(robot_speed):
 		wheel_rotations2 = wheel_radian2 / (2 * pi)
 		motor_rotations1 = wheel_rotations1 * wheel_reduction
 		motor_rotations2 = wheel_rotations2 * wheel_reduction
-		#if w1 > max_motor_speed or w2 > max_motor_speed:
-		#	w1, w2 = normalize(w1, w2)
+		if fabs(motor_rotations1) > max_motor_speed or fabs(motor_rotations2) > max_motor_speed:
+			motor_rotations1, motor_rotations2 = normalize(motor_rotations1, motor_rotations2)
 		speeds.right_vel[robot] = motor_rotations1
 		speeds.left_vel[robot] = motor_rotations2
 
