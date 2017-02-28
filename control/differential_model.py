@@ -8,9 +8,9 @@ wheel_reduction = 3/ 1 #motor -> wheel
 r = 0.035 #wheel radius in m
 L = 0.075 #distance between wheels in m
 
-max_tics_per_s = 70000 #equivalent to 700 tics/10ms
-encoder_resolution = 512*19
-max_motor_speed = (max_tics_per_s) / encoder_resolution 
+max_tics_per_s = 70000. #equivalent to 700 tics/10ms
+encoder_resolution = 512.*19
+max_motor_speed = (max_tics_per_s) / encoder_resolution
 
 number_of_robots = 3
 
