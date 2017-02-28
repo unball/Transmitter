@@ -7,13 +7,13 @@ from math import fabs
 
 #Control constants
 Kp_lin = 1.2
-Kp_ang = 500
+Kp_ang = 9
 distance_threshold = 0
 angular_threshold = 0
 
 number_of_robots = 3
 
-distance_to_saturate = 0.3
+distance_to_saturate = 0.3 #in meters
 def saturation(distance):
 	if distance > distance_to_saturate:
 		return 1
@@ -26,12 +26,13 @@ def Pcontrol(Kp, error, threshold = 0):
 		result = Kp * error
 	return result
 
+#return: in Degrees
 def calculateErrorAngle(y, x):
 	th = atan2(y, x)
 	if th > 0:
-		return pi/2 - th
+		return (180/pi)*(pi/2 - th)
 	else:
-		return -(pi/2 + th)
+		return -(180/pi)*(pi/2 + th)
 
 def calculate_robot_speeds(vector):
 	for robot in range(number_of_robots):
