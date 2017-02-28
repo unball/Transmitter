@@ -5,12 +5,20 @@ from math import atan2
 from math import pi
 from math import fabs
 
-Kp_lin = 120/2
-Kp_ang = 1000/2
-distance_threshold = 0.1
-angular_threshold = 0.1
+#Control constants
+Kp_lin = 1.2
+Kp_ang = 500
+distance_threshold = 0
+angular_threshold = 0
 
 number_of_robots = 3
+
+distance_to_saturate = 0.3
+def saturation(distance):
+	if distance > distance_to_saturate:
+		return 1
+	else:
+		return distance
 
 def Pcontrol(Kp, error, threshold = 0):
 	result = 0
@@ -28,12 +36,13 @@ def calculateErrorAngle(y, x):
 def calculate_robot_speeds(vector):
 	for robot in range(number_of_robots):
 		distance = vector.y[robot] #could use the magnitude of the vector. it's a different behaviour, though
+		distance = saturation(distance)
 		dTh = calculateErrorAngle(vector.y[robot], vector.x[robot])
 
 		linear_vel = Pcontrol(Kp_lin, distance, distance_threshold) #in cm/s
-		angular_vel = Pcontrol(Kp_ang, dTh, angular_threshold) * fabs(vector.x[robot])
+		angular_vel = Pcontrol(Kp_ang, dTh, angular_threshold)
 
-		speeds.linear_vel[robot] = linear_vel / 100.0
+		speeds.linear_vel[robot] = linear_vel
 		speeds.angular_vel[robot] = angular_vel
 	
 def robot_speed_control_node():

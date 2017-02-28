@@ -46,6 +46,10 @@ def publisher():
             if msg.menu == 8:
                 msg.MotorA[0] = getmotorVel("A")
                 msg.MotorB[0] = getmotorVel("B")
+                msg.MotorA[1] = msg.MotorA[0]
+                msg.MotorB[1] = msg.MotorB[0]
+                msg.MotorA[2] = msg.MotorA[0]
+                msg.MotorB[2] = msg.MotorB[0]
             if msg.menu == 9:
                 pass
             
