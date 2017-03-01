@@ -1,6 +1,7 @@
 import rospy
 from math import pi
 from math import fabs
+from math import isnan
 from communication.msg import robots_speeds_msg
 from communication.msg import wheels_speeds_msg
 
@@ -49,9 +50,13 @@ def differential_model_node():
 	rospy.Subscriber('robots_speeds', robots_speeds_msg, processPosition)
 
 	while not rospy.is_shutdown():
-		pub.publish(speeds)
-		rate.sleep()
-		pass
+		notAnumber = False
+		for i in range(3):
+			if isnan(speeds.right_vel[i]) or isnan(speeds.left_vel[i]):
+				notAnumber = True
+		if not notAnumber:
+			pub.publish(speeds)
+			rate.sleep()
 
 if __name__ == '__main__':
     try:

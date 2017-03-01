@@ -4,9 +4,10 @@ from communication.msg import robots_speeds_msg
 from math import atan2
 from math import pi
 from math import fabs
+from math import sqrt
 
 #Control constants
-Kp_lin = 1
+Kp_lin = 0
 Kp_ang = 3
 distance_threshold = 0
 angular_threshold = 0
@@ -38,7 +39,10 @@ def calculateErrorAngle(y, x):
 		return -(pi/2 + th)
 
 def calculate_robot_speeds(vector):
+	
 	for robot in range(number_of_robots):
+		print robot
+		print sqrt((vector.y[robot] * vector.y[robot]) + (vector.x[robot] * vector.x[robot])) 
 		distance = vector.y[robot] #could use the magnitude of the vector. it's a different behaviour, though
 		distance = saturation(distance)
 		dTh = calculateErrorAngle(vector.y[robot], vector.x[robot])
