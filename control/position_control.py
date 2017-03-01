@@ -7,8 +7,8 @@ from math import fabs
 from math import sqrt
 
 #Control constants
-Kp_lin = 0
-Kp_ang = 3
+Kp_lin = 1
+Kp_ang = 3*180/pi
 distance_threshold = 0
 angular_threshold = 0
 
@@ -61,7 +61,7 @@ def robot_speed_control_node():
 	rate = rospy.Rate(10)
 
 	pub = rospy.Publisher('robots_speeds', robots_speeds_msg, queue_size=10)
-	rospy.Subscriber('target_positions_topic', target_positions_msg, calculate_robot_speeds)
+	rospy.Subscriber('relative_positions_topic', target_positions_msg, calculate_robot_speeds)
 
 	while not rospy.is_shutdown():
 		pub.publish(speeds)
