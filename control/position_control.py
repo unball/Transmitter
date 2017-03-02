@@ -8,7 +8,7 @@ from math import sqrt
 
 #Control constants
 Kp_lin = 1
-Kp_ang = 3*180/pi
+Kp_ang = 3
 distance_threshold = 0
 angular_threshold = 0
 
