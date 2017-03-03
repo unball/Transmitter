@@ -9,9 +9,13 @@ from math import sqrt
 
 #Control constants
 Kp_lin = 1
+
 Kp_ang = 3
+Ki_ang = 1
 
 number_of_robots = 3
+linear_controller = []
+angular_controller = []
 
 distance_to_saturate = 0.8 #in meters
 def saturation(distance):
@@ -32,18 +36,21 @@ def calculateErrorAngle(y, x):
 		return -(pi/2 + th)
 
 def calculate_robot_speeds(vector):
+
 	for robot in range(number_of_robots):
 		distance = vector.y[robot] #could use the magnitude of the vector. it's a different behaviour, though
 		distance = saturation(distance)
 		dTh = calculateErrorAngle(vector.y[robot], vector.x[robot])
 
-		linear_controller = PID(Kp = Kp_lin);
-		angular_controller = PID(Kp = Kp_ang)
-
-		speeds.linear_vel[robot] = linear_controller.control(error = distance)
-		speeds.angular_vel[robot] = angular_controller.control(error = dTh)
+		speeds.linear_vel[robot] = linear_controller[robot].control(error = distance)
+		speeds.angular_vel[robot] = angular_controller[robot].control(error = dTh)
 	
 def robot_speed_control_node():
+
+	for i in range(3):
+		linear_controller.append( PID(Kp = Kp_lin) )
+		angular_controller.append( PID(Kp = Kp_ang, Ki = Ki_ang) )
+
 	global speeds
 	speeds = robots_speeds_msg()
 
