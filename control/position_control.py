@@ -8,10 +8,10 @@ from math import fabs
 from math import sqrt
 
 #Control constants
-Kp_lin = 1
+Kp_lin = 0
 
 Kp_ang = 3
-Ki_ang = 1
+Ki_ang = 0.1
 
 number_of_robots = 3
 linear_controller = []
@@ -42,8 +42,8 @@ def calculate_robot_speeds(vector):
 		distance = saturation(distance)
 		dTh = calculateErrorAngle(vector.y[robot], vector.x[robot])
 
-		speeds.linear_vel[robot] = linear_controller[robot].control(error = distance)
-		speeds.angular_vel[robot] = angular_controller[robot].control(error = dTh)
+		speeds.linear_vel[robot] = linear_controller[robot].control(distance)
+		speeds.angular_vel[robot] = angular_controller[robot].control(dTh)
 	
 def robot_speed_control_node():
 

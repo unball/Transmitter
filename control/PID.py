@@ -14,17 +14,18 @@ class PID:
 		self.current_time = time.time()
 		self.last_time = self.current_time		
 
-	def dt():
+	def dt(self):
 		self.current_time = time.time()
 		delta_time = self.current_time - self.last_time
 		self.last_time = self.current_time
+		return delta_time
 
-	def control(error):
+	def control(self, error):
 
-		self.error_i += error * dt()
+		self.error_i += error * self.dt()
 
 		result = self.Kp * error + self.Ki * self.error_i
 		return result
 
-	def reset_error_i():
+	def reset_error_i(self):
 		self.error_i = 0.0
