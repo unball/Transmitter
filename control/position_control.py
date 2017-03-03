@@ -1,4 +1,5 @@
 import rospy
+from PID import *
 from communication.msg import target_positions_msg
 from communication.msg import robots_speeds_msg
 from math import atan2
@@ -9,8 +10,6 @@ from math import sqrt
 #Control constants
 Kp_lin = 1
 Kp_ang = 3
-distance_threshold = 0
-angular_threshold = 0
 
 number_of_robots = 3
 
@@ -20,12 +19,6 @@ def saturation(distance):
 		return 1
 	else:
 		return distance
-
-def Pcontrol(Kp, error, threshold = 0):
-	result = 0
-	if (fabs(error) > fabs(threshold)):
-		result = Kp * error
-	return result
 
 #return: in Degrees
 def calculateErrorAngle(y, x):
@@ -39,19 +32,16 @@ def calculateErrorAngle(y, x):
 		return -(pi/2 + th)
 
 def calculate_robot_speeds(vector):
-	
 	for robot in range(number_of_robots):
-		print robot
-		print sqrt((vector.y[robot] * vector.y[robot]) + (vector.x[robot] * vector.x[robot])) 
 		distance = vector.y[robot] #could use the magnitude of the vector. it's a different behaviour, though
 		distance = saturation(distance)
 		dTh = calculateErrorAngle(vector.y[robot], vector.x[robot])
 
-		linear_vel = Pcontrol(Kp_lin, distance, distance_threshold)
-		angular_vel = Pcontrol(Kp_ang, dTh, angular_threshold)
+		linear_controller = PID(Kp = Kp_lin);
+		angular_controller = PID(Kp = Kp_ang)
 
-		speeds.linear_vel[robot] = linear_vel
-		speeds.angular_vel[robot] = angular_vel
+		speeds.linear_vel[robot] = linear_controller.control(error = distance)
+		speeds.angular_vel[robot] = angular_controller.control(error = dTh)
 	
 def robot_speed_control_node():
 	global speeds
