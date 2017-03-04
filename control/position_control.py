@@ -8,10 +8,10 @@ from math import fabs
 from math import sqrt
 
 #Control constants
-Kp_lin = 0
+Kp_lin = 1
 
 Kp_ang = 3
-Ki_ang = 0.1
+Ki_ang = 0.3
 
 number_of_robots = 3
 linear_controller = []
@@ -51,17 +51,17 @@ def calculate_robot_speeds(vector):
 
 		prev_dTh[robot] = dTh
 
-def changed_quadrant(error):
-	return quadrant(dTh) != quadrant(prev_dTh)
+def changed_quadrant(angle):
+	return quadrant(angle) != quadrant(prev_dTh)
 
 def quadrant(angle):
-	if angle >= 0 and angle <= 90:
+	if angle >= 0 and angle <= pi/2:
 		return 1
-	elif angle > 90 and angle <= 180:
+	elif angle > pi/2 and angle <= pi:
 		return 2
 	elif angle < 0 and angle >= -90:
 		return 3
-	elif angle < -90 and angle > -180:
+	elif angle < -pi/2 and angle > -pi:
 		return 4
 	
 def robot_speed_control_node():
