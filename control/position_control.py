@@ -35,6 +35,7 @@ def calculateErrorAngle(y, x):
 	else:
 		return -(pi/2 + th)
 
+prev_dTh = [0.0, 0.0, 0.0]
 def calculate_robot_speeds(vector):
 
 	for robot in range(number_of_robots):
@@ -42,8 +43,26 @@ def calculate_robot_speeds(vector):
 		distance = saturation(distance)
 		dTh = calculateErrorAngle(vector.y[robot], vector.x[robot])
 
+		if changed_quadrant(dTh):
+			angular_controller[robot].reset_error_i()
+
 		speeds.linear_vel[robot] = linear_controller[robot].control(distance)
 		speeds.angular_vel[robot] = angular_controller[robot].control(dTh)
+
+		prev_dTh[robot] = dTh
+
+def changed_quadrant(error):
+	return quadrant(dTh) != quadrant(prev_dTh)
+
+def quadrant(angle):
+	if angle >= 0 and angle <= 90:
+		return 1
+	elif angle > 90 and angle <= 180:
+		return 2
+	elif angle < 0 and angle >= -90:
+		return 3
+	elif angle < -90 and angle > -180:
+		return 4
 	
 def robot_speed_control_node():
 
