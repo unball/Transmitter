@@ -80,9 +80,13 @@ def robot_speed_control_node():
 	rospy.Subscriber('relative_positions_topic', target_positions_msg, calculate_robot_speeds)
 
 	while not rospy.is_shutdown():
-		pub.publish(speeds)
-		rate.sleep()
-		pass
+		notAnumber = False
+		for i in range(3):
+			if isnan(speeds.linear_vel[i]) or isnan(speeds.angular_vel[i]):
+				notAnumber = True
+		if not notAnumber:
+			pub.publish(speeds)
+			rate.sleep()
 	
 if __name__ == '__main__':
 	try:
