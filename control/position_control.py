@@ -1,4 +1,5 @@
 import rospy
+from PID import *
 from communication.msg import target_positions_msg
 from communication.msg import robots_speeds_msg
 from math import atan2
@@ -8,11 +9,13 @@ from math import sqrt
 
 #Control constants
 Kp_lin = 1
+
 Kp_ang = 3
-distance_threshold = 0
-angular_threshold = 0
+Ki_ang = 0.3
 
 number_of_robots = 3
+linear_controller = []
+angular_controller = []
 
 distance_to_saturate = 0.8 #in meters
 def saturation(distance):
@@ -20,12 +23,6 @@ def saturation(distance):
 		return 1
 	else:
 		return distance
-
-def Pcontrol(Kp, error, threshold = 0):
-	result = 0
-	if (fabs(error) > fabs(threshold)):
-		result = Kp * error
-	return result
 
 #return: in Degrees
 def calculateErrorAngle(y, x):
@@ -38,22 +35,41 @@ def calculateErrorAngle(y, x):
 	else:
 		return -(pi/2 + th)
 
+prev_dTh = [0.0, 0.0, 0.0]
 def calculate_robot_speeds(vector):
-	
+
 	for robot in range(number_of_robots):
-		print robot
-		print sqrt((vector.y[robot] * vector.y[robot]) + (vector.x[robot] * vector.x[robot])) 
 		distance = vector.y[robot] #could use the magnitude of the vector. it's a different behaviour, though
 		distance = saturation(distance)
 		dTh = calculateErrorAngle(vector.y[robot], vector.x[robot])
 
-		linear_vel = Pcontrol(Kp_lin, distance, distance_threshold)
-		angular_vel = Pcontrol(Kp_ang, dTh, angular_threshold)
+		if changed_quadrant(dTh):
+			angular_controller[robot].reset_error_i()
 
-		speeds.linear_vel[robot] = linear_vel
-		speeds.angular_vel[robot] = angular_vel
+		speeds.linear_vel[robot] = linear_controller[robot].control(distance)
+		speeds.angular_vel[robot] = angular_controller[robot].control(dTh)
+
+		prev_dTh[robot] = dTh
+
+def changed_quadrant(angle):
+	return quadrant(angle) != quadrant(prev_dTh)
+
+def quadrant(angle):
+	if angle >= 0 and angle <= pi/2:
+		return 1
+	elif angle > pi/2 and angle <= pi:
+		return 2
+	elif angle < 0 and angle >= -90:
+		return 3
+	elif angle < -pi/2 and angle > -pi:
+		return 4
 	
 def robot_speed_control_node():
+
+	for i in range(3):
+		linear_controller.append( PID(Kp = Kp_lin) )
+		angular_controller.append( PID(Kp = Kp_ang, Ki = Ki_ang) )
+
 	global speeds
 	speeds = robots_speeds_msg()
 
@@ -64,9 +80,13 @@ def robot_speed_control_node():
 	rospy.Subscriber('relative_positions_topic', target_positions_msg, calculate_robot_speeds)
 
 	while not rospy.is_shutdown():
-		pub.publish(speeds)
-		rate.sleep()
-		pass
+		notAnumber = False
+		for i in range(3):
+			if isnan(speeds.linear_vel[i]) or isnan(speeds.angular_vel[i]):
+				notAnumber = True
+		if not notAnumber:
+			pub.publish(speeds)
+			rate.sleep()
 	
 if __name__ == '__main__':
 	try:
