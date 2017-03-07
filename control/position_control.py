@@ -9,19 +9,25 @@ from math import fabs
 from math import sqrt
 
 #Control constants
-Kp_lin = 1
+Kp_lin = 3
 
-Kp_ang = 3
-Ki_ang = 0.3
+Kp_ang = 1
+Ki_ang  = 0.8
+
+
+
+Kp_ang *= -1 #nao mexe aqui
+Ki_ang *= -1
+
 
 number_of_robots = 3
 linear_controller = []
 angular_controller = []
 
-distance_to_saturate = 0.8 #in meters
+distance_to_saturate = 0.5 #in meters
 def saturation(distance):
 	if distance > distance_to_saturate:
-		return 1
+		return distance_to_saturate
 	else:
 		return distance
 
@@ -31,6 +37,7 @@ def calculateErrorAngle(y, x):
 		return 0
 
 	th = atan2(y, x)
+	
 	if th > 0:
 		return (pi/2 - th)
 	else:
@@ -90,7 +97,6 @@ def robot_speed_control_node():
 			rate.sleep()
 	
 if __name__ == '__main__':
-	print '[PositionControl]main: begin'
 	try:
 		robot_speed_control_node()
 	except rospy.ROSInterruptException:

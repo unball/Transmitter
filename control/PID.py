@@ -22,7 +22,7 @@ class PID:
 
 	def control(self, error):
 
-		self.error_i += error * self.dt()
+		self.error_i += error #* self.dt()
 		result = self.Kp * error + self.Ki * self.error_i
 		return result
 

@@ -18,7 +18,7 @@ def callback(data):
 
 def start():
         global pub
-        pub = rospy.Publisher('target_positions_topic',target_positions_msg, queue_size=10)
+        pub = rospy.Publisher('relative_positions_topic',target_positions_msg, queue_size=10)
         rospy.Subscriber('joy', Joy, callback)
         rospy.init_node('joystick')
         rospy.spin()
