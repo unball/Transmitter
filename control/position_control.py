@@ -9,12 +9,11 @@ from math import fabs
 from math import sqrt
 
 #Control constants
-Kp_lin = 2
+Kp_lin = [2, 1, 2[]
+Ki_lin = [0, 0, 0]
 
-Kp_ang = 1
-Ki_ang  = 1
-
-
+Kp_ang = [1, 1, 1]
+Ki_ang  = [1, 1, 1]
 
 Kp_ang *= -1 #nao mexe aqui
 Ki_ang *= -1
@@ -31,7 +30,6 @@ def saturation(distance):
 	else:
 		return distance
 
-#return: in Degrees
 def calculateErrorAngle(y, x):
 	if x==0 and y==0:
 		return 0
@@ -74,15 +72,10 @@ def quadrant(angle):
 	
 def robot_speed_control_node():
 	print '[PositionControl]robot_speed_control_node: begin'
-	linear_controller.append( PID(Kp = Kp_lin) )
-	linear_controller.append( PID(Kp = 1) )
-	linear_controller.append( PID(Kp = Kp_lin) )
-
+	
 	for i in range(3):
-		#if i == 2:
-		#	linear_controller.append( PID(Kp = 1) )
-		#else:
-		angular_controller.append( PID(Kp = Kp_ang, Ki = Ki_ang) )
+		linear_controller.append( PID(Kp = Kp_lin[i], Ki = Ki_lin[i]) )
+		angular_controller.append( PID(Kp = Kp_ang[i], Ki = Ki_ang[i]) )
 
 	global speeds
 	speeds = robots_speeds_msg()
