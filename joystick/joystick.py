@@ -14,6 +14,13 @@ def callback(data):
         msg.x[robot] = -data.axes[0]*k
         msg.y[robot] =  data.axes[1]*k
 
+    msg.x[0] = 0
+    msg.y[0] = 0
+
+    msg.x[1] = 0
+    msg.y[1] = 0
+
+
     pub.publish(msg)
 
 def start():
