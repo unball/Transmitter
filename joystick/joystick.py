@@ -14,7 +14,9 @@ def callback(data):
 
     for robot in range(number_of_robots):
         msg.x[robot] = -data.axes[0]*k
-        msg.y[robot] =  data.axes[1]*k
+        msg.y[robot] =  -(data.axes[4]*k - 1)/2
+        if data.buttons[0]:
+            msg.y[robot] = -msg.y[robot]        
         if not data.buttons[MOVE_BUTTON]:
             msg.x[robot] = 0
             msg.y[robot] = 0

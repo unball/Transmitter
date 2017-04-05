@@ -12,8 +12,8 @@ from math import sqrt
 Kp_lin = [2, 1, 2]
 Ki_lin = [0, 0, 0]
 
-Kp_ang = [1, 1, 1]
-Ki_ang  = [1, 1, 1]
+Kp_ang = [0.4, 0.4, 0.4]
+Ki_ang  = [0, 0, 0]
 
 Kp_ang = [k * -1 for k in Kp_ang] #nao mexe aqui
 Ki_ang = [k * -1 for k in Ki_ang]
@@ -34,8 +34,7 @@ def calculateErrorAngle(y, x):
 	if x==0 and y==0:
 		return 0
 
-	th = atan2(y, x)
-	
+	return (pi/2 - th)
 	if th > 0:
 		return (pi/2 - th)
 	else:
@@ -53,7 +52,7 @@ def calculate_robot_speeds(vector):
 			angular_controller[robot].reset_error_i()
 
 		speeds.linear_vel[robot] = linear_controller[robot].control(distance)
-		speeds.angular_vel[robot] = angular_controller[robot].control(dTh)
+		speeds.angular_vel[robot] = vector.x[robot]#angular_controller[robot].control(dTh)
 
 		prev_dTh[robot] = dTh
 
