@@ -6,6 +6,8 @@ from subprocess import call
 
 number_of_robots = 3
 
+MOVE_BUTTON = 5
+
 def callback(data):
     k = 1
     msg = target_positions_msg()
@@ -13,13 +15,9 @@ def callback(data):
     for robot in range(number_of_robots):
         msg.x[robot] = -data.axes[0]*k
         msg.y[robot] =  data.axes[1]*k
-
-    msg.x[0] = 0
-    msg.y[0] = 0
-
-    msg.x[1] = 0
-    msg.y[1] = 0
-
+        if not data.buttons[MOVE_BUTTON]:
+            msg.x[robot] = 0
+            msg.y[robot] = 0
 
     pub.publish(msg)
 
