@@ -9,14 +9,14 @@ from math import fabs
 from math import sqrt
 
 #Control constants
-Kp_lin = [2, 1, 2[]
+Kp_lin = [2, 1, 2]
 Ki_lin = [0, 0, 0]
 
 Kp_ang = [1, 1, 1]
 Ki_ang  = [1, 1, 1]
 
-Kp_ang *= -1 #nao mexe aqui
-Ki_ang *= -1
+Kp_ang = [k * -1 for k in Kp_ang] #nao mexe aqui
+Ki_ang = [k * -1 for k in Ki_ang]
 
 
 number_of_robots = 3
