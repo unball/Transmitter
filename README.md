@@ -2,7 +2,7 @@
 Communication repository for @unball
 
 
-##Building the communication node
+## Building the communication node
 
 1. If it's your first time running this code, and you use ubuntu, please run `sh fix.sh` (your arduino must be plugged in)
 
@@ -16,7 +16,7 @@ Communication repository for @unball
 3. Make a link on your [catkin workspace](http://wiki.ros.org/catkin/Tutorials/create_a_workspace)
 
 
-##Running
+## Running
 
 Run `roslaunch communication run_communication.launch`
 
@@ -38,7 +38,7 @@ Run `roslaunch communication run_communication.launch`
 * Terminal 10: `rostopic echo /wheels_speeds`
 * Terminal 11: `rostopic echo /radio_topic`
 
-##Sending speeds with terminal
+## Sending speeds with terminal
 
 After open the Terminal 4
 * Run `python dummy_publisher/dummy_pub.py`
