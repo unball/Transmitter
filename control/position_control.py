@@ -34,12 +34,9 @@ def calculateErrorAngle(y, x):
 	if x==0 and y==0:
 		return 0
 
-	th = atan2(y, x)
-	
-	if th > 0:
-		return (pi/2 - th)
-	else:
-		return -(pi/2 + th)
+	th = atan2(-x, y)
+	print th
+	return (th)
 
 prev_dTh = [0.0, 0.0, 0.0]
 def calculate_robot_speeds(vector):
@@ -52,8 +49,8 @@ def calculate_robot_speeds(vector):
 		if changed_quadrant(dTh):
 			angular_controller[robot].reset_error_i()
 
-		speeds.linear_vel[robot] = linear_controller[robot].control(distance)
-		speeds.angular_vel[robot] = angular_controller[robot].control(dTh)
+		speeds.linear_vel[robot] = 0#linear_controller[robot].control(distance)
+		speeds.angular_vel[robot] = 0#angular_controller[robot].control(dTh)
 
 		prev_dTh[robot] = dTh
 
@@ -69,10 +66,10 @@ def quadrant(angle):
 		return 3
 	elif angle < -pi/2 and angle > -pi:
 		return 4
-	
+
 def robot_speed_control_node():
 	print '[PositionControl]robot_speed_control_node: begin'
-	
+
 	for i in range(3):
 		linear_controller.append( PID(Kp = Kp_lin[i], Ki = Ki_lin[i]) )
 		angular_controller.append( PID(Kp = Kp_ang[i], Ki = Ki_ang[i]) )
@@ -94,7 +91,7 @@ def robot_speed_control_node():
 		if not notAnumber:
 			pub.publish(speeds)
 			rate.sleep()
-	
+
 if __name__ == '__main__':
 	try:
 		robot_speed_control_node()
