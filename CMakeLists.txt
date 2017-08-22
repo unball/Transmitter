@@ -33,16 +33,10 @@ link_directories(
   ${SDFormat_LIBRARY_DIRS}
 )
 
-
-
-
 generate_messages(DEPENDENCIES std_msgs)
 
 catkin_package(
 )
 
 catkin_install_python(PROGRAMS dummy_publisher/dummy_pub.py
-                               control/differential_model.py
-                               control/position_control.py
-                               control/speed_converter.py
                       DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
