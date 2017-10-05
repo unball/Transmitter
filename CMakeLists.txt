@@ -35,8 +35,7 @@ link_directories(
 
 generate_messages(DEPENDENCIES std_msgs)
 
-catkin_package(
-)
+catkin_package()
 
-catkin_install_python(PROGRAMS dummy_publisher/dummy_pub.py
+catkin_install_python(PROGRAMS joystick/joystick.py
                       DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
