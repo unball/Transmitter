@@ -1,32 +1,34 @@
 #!/usr/bin/env python
 import rospy
 from sensor_msgs.msg import Joy
-from communication.msg import target_positions_msg
 from subprocess import call
+from communication.msg import robots_speeds_msg
 
 number_of_robots = 3
 
-MOVE_BUTTON = 5
+STEER_AXIS = 0
+ACCEL_AXIS = 4
+REAR_BUTTON = 2
 
 def callback(data):
-    k = 1
-    msg = target_positions_msg()
+    robots_speeds = robots_speeds_msg()
 
     for robot in range(number_of_robots):
-        msg.x[robot] = -data.axes[0]*k
-        msg.y[robot] =  data.axes[1]*k
-        if not data.buttons[MOVE_BUTTON]:
-            msg.x[robot] = 0
-            msg.y[robot] = 0
+        linear_vel = (data.axes[ACCEL_AXIS] - 1) * (-1)
+        if data.buttons[REAR_BUTTON]:
+            linear_vel *= -1
+        angular_vel = data.axes[STEER_AXIS] * -14
+        robots_speeds.linear_vel[robot] = linear_vel
+        robots_speeds.angular_vel[robot] = 0 if abs(angular_vel) < 0.1 else angular_vel
 
-    pub.publish(msg)
+    pub.publish(robots_speeds)
 
 def start():
-        global pub
-        pub = rospy.Publisher('relative_positions_topic',target_positions_msg, queue_size=10)
-        rospy.Subscriber('joy', Joy, callback)
-        rospy.init_node('joystick')
-        rospy.spin()
+    rospy.init_node('joystick')
+    rospy.Subscriber('joy', Joy, callback)
+    global pub
+    pub = rospy.Publisher('robots_speeds', robots_speeds_msg, queue_size=10)
+    rospy.spin()
 
 if __name__ == '__main__':
     start()
