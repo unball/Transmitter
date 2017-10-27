@@ -14,8 +14,8 @@ int CS = 10; //pro micro
 RF24 radio(CE,CS);
 
 const uint64_t Channels[4] = { 0xABCDABCD71LL, 0x544d52687CLL , 0x644d52687CLL, 0x744d52687CLL};
-uint64_t ChannelEnvia = Channels[1];
-uint64_t ChannelRecebe = Channel[0];
+uint64_t ChannelEnvia = Channels[0];
+uint64_t ChannelRecebe = Channel[3];
 
 void setup() {
   // put your setup code here, to run once:

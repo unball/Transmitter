@@ -14,8 +14,8 @@ int CS = 2; //nano
 RF24 radio(CE,CS);
 
 const uint64_t pipes[4] = { 0xABCDABCD71LL, 0x544d52687CLL , 0x644d52687CLL, 0x744d52687CLL};
-uint64_t pipeEnvia=pipes[1];
-uint64_t pipeRecebe=pipes[0];
+uint64_t pipeEnvia=pipes[0];
+uint64_t pipeRecebe=pipes[3];
 
 ros::NodeHandle nh;
 
@@ -57,7 +57,7 @@ void repeteVelocidade(){
   radio.stopListening();
   radio.enableDynamicAck();
   for (int i=0; i<3; i++) {
-    radio.openWritingPipe(pipes[1+i]);
+    radio.openWritingPipe(pipes[i]);
     radio.write(&velocidades[i],sizeof(velocidades[i]), 1);    
   }
   radio.startListening();
