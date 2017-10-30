@@ -1,9 +1,11 @@
 #include <SPI.h>
 #include "RF24.h"
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
 
 struct DataStruct{
-    int Robot=0;
-    int Message=0;
+    int Robot;
+    int Message;
 };
 
 DataStruct Report;
@@ -12,21 +14,46 @@ int CE = A0; //pro micro
 int CS = 10; //pro micro
 
 RF24 radio(CE,CS);
+LiquidCrystal_I2C lcd(0x3F, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
+
 
 const uint64_t Channels[4] = { 0xABCDABCD71LL, 0x544d52687CLL , 0x644d52687CLL, 0x744d52687CLL};
 uint64_t ChannelEnvia = Channels[0];
-uint64_t ChannelRecebe = Channel[3];
+uint64_t ChannelRecebe = Channels[3];
 
 void setup() {
   // put your setup code here, to run once:
+  Serial.begin (9600);
   RadioSetup();
+  Report.Robot = 1;
+  Report.Message = 1;
+  lcd.begin(16,2);
+  lcd.setBacklight (HIGH);
 
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  ReceiveReport(&Report);
-
+  //ReceiveReport();
+  Serial.println(Report.Robot);
+  if (Report.Robot == 0){
+    lcd.setCursor (5,0);
+    lcd.print ("UNBALL");
+  }
+  if (Report.Robot == 1){
+    lcd.setCursor (5,0);
+    lcd.print ("ROBOT 0");
+  }
+  if (Report.Robot == 2){
+    lcd.setCursor (5,0);
+    lcd.print ("ROBOT 1");
+  }
+  if (Report.Robot == 3){
+    lcd.setCursor (5,0);
+    lcd.print ("ROBOT 2");
+  }
+ // lcd_print (Report.Robot, Report.Message);
+ delay(1000);
 }
 
 void RadioSetup(){
@@ -45,13 +72,30 @@ void RadioSetup(){
     radio.startListening();                 // Start listening
 }
 
-void ReceiveReport(DataStruct *data){       //Function to receive data
+void ReceiveReport(){       //Function to receive data
   if(radio.available()){
-    radio.read(data, sizeof(DataStruct));
+    radio.read(&Report, sizeof(DataStruct));
   }
 }
 
-
+/*void lcd_print (int a, int b){
+  if (Report.Robot == 0){
+    lcd.setCursor (5,0);
+    lcd.print ("UNBALL");
+  }
+  if (Report.Robot == 1){
+    lcd.setCursor (5,0);
+    lcd.print ("ROBOT 0");
+  }
+  if (a == 2){
+    lcd.setCursor (5,0);
+    lcd.print ("ROBOT 1");
+  }
+   if (a == 3){
+    lcd.setCursor (5,0);
+    lcd.print ("ROBOT 2");
+  }
+}*/
 
 
 
