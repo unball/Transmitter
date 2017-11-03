@@ -4,12 +4,14 @@
 #include <LiquidCrystal_I2C.h>
 
 struct DataStruct{
-    int Robot;
-    int Message;
+    int Robot=0;
+    int Message=0;
 };
 
-DataStruct Report;
-
+DataStruct Report, vel, Data[3];
+int ctr=0;
+int state[3] = {49, 49, 49};
+int msg[3] = {0, 0, 0};
 int CE = A0; //pro micro
 int CS = 10; //pro micro
 
@@ -25,35 +27,24 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin (9600);
   RadioSetup();
-  Report.Robot = 1;
-  Report.Message = 1;
   lcd.begin(16,2);
   lcd.setBacklight (HIGH);
+  //Report.Robot = 1;
 
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  //ReceiveReport();
-  Serial.println(Report.Robot);
-  if (Report.Robot == 0){
-    lcd.setCursor (5,0);
-    lcd.print ("UNBALL");
+  ReceiveReport();
+  if(state[0] != Data[0].Message || state[1] != Data[1].Message || state[2] != Data[2].Message){
+    Serial.println(Report.Robot);
+    Serial.println(Report.Message);
+    Print_lcd();
+    state[0] = Data[0].Message;
+    state[1] = Data[1].Message;
+    state[2] = Data[2].Message;
   }
-  if (Report.Robot == 1){
-    lcd.setCursor (5,0);
-    lcd.print ("ROBOT 0");
-  }
-  if (Report.Robot == 2){
-    lcd.setCursor (5,0);
-    lcd.print ("ROBOT 1");
-  }
-  if (Report.Robot == 3){
-    lcd.setCursor (5,0);
-    lcd.print ("ROBOT 2");
-  }
- // lcd_print (Report.Robot, Report.Message);
- delay(1000);
+  delay(500);
 }
 
 void RadioSetup(){
@@ -72,31 +63,92 @@ void RadioSetup(){
     radio.startListening();                 // Start listening
 }
 
+void NotReceivingFor(){
+  ctr++;
+}
+
 void ReceiveReport(){       //Function to receive data
   if(radio.available()){
-    radio.read(&Report, sizeof(DataStruct));
+    ctr = 0;
+    while(radio.available()){
+        radio.read(&Report, sizeof(DataStruct));
+    }
+    Serial.println("receiving");
+    Data[Report.Robot].Message = Report.Message;
+    Serial.println(Data[Report.Robot].Message);
+  }
+  else{
+    Serial.println("not receiving");
+    NotReceivingFor();
+    if(ctr > 10){
+      Data[0].Message = 0;
+      Data[1].Message = 0;
+      Data[2].Message = 0;
+    }
   }
 }
 
-/*void lcd_print (int a, int b){
-  if (Report.Robot == 0){
+void Clear_lcd(){
+  lcd.setCursor(0,0);
+    lcd.print("                ");
+    lcd.setCursor(0,1);
+    lcd.print("                ");
+}
+
+void Print_lcd(){
+  if (Data[0].Message == 0 && Data[1].Message == 0 && Data[1].Message == 0){
+    Clear_lcd();
     lcd.setCursor (5,0);
     lcd.print ("UNBALL");
+    lcd.setCursor(0,1);
+    lcd.print("FUTEBOL DE ROBOS");
   }
-  if (Report.Robot == 1){
-    lcd.setCursor (5,0);
-    lcd.print ("ROBOT 0");
+  else{
+    Clear_lcd();
+    lcd.setCursor (1,0);
+    lcd.print ("R00");
+    lcd.setCursor (6,0);
+    lcd.print ("R01");
+    lcd.setCursor (11,0);
+    lcd.print ("R02");
+  
+    if (Data[0].Message == 1){
+      lcd.setCursor (1,1);
+      lcd.print ("LOST");
+    }
+    else if(Data[0].Message == 2){
+      lcd.setCursor (2,1);
+      lcd.print ("OK");
+    }
+    else{
+      lcd.setCursor (1,1);
+      lcd.print ("OFF");
+    }
+    
+    if (Data[1].Message == 1){
+      lcd.setCursor (6,1);
+      lcd.print ("LOST");
+    }
+    else if(Data[1].Message == 2){
+      lcd.setCursor (7,1);
+      lcd.print ("OK");
+    }
+    else{
+      lcd.setCursor (6,1);
+      lcd.print ("OFF");
+    }
+    
+    if (Data[2].Message == 1){
+      lcd.setCursor (11,1);
+      lcd.print ("LOST");
+    }
+    else if(Data[2].Message == 2){
+      lcd.setCursor (12,1);
+      lcd.print ("OK");
+    }
+    else{
+      lcd.setCursor (11,1);
+      lcd.print ("OFF");
+    }
   }
-  if (a == 2){
-    lcd.setCursor (5,0);
-    lcd.print ("ROBOT 1");
-  }
-   if (a == 3){
-    lcd.setCursor (5,0);
-    lcd.print ("ROBOT 2");
-  }
-}*/
-
-
-
-
+}
