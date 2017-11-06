@@ -8,10 +8,12 @@ struct DataStruct{
     int Message=0;
 };
 
-DataStruct Report, vel, Data[3];
-int ctr=0;
-int state[3] = {49, 49, 49};
-int msg[3] = {0, 0, 0};
+DataStruct Report;
+int ctr[4] = {0, 0, 0, 0}; 
+int u=0;
+char test[4];
+int state[3];
+int Data[3] = {0, 0, 0};
 int CE = A0; //pro micro
 int CS = 10; //pro micro
 
@@ -26,25 +28,38 @@ uint64_t ChannelRecebe = Channels[3];
 void setup() {
   // put your setup code here, to run once:
   Serial.begin (9600);
+  //while(!Serial);
+  Serial.println("passou aqui");
   RadioSetup();
   lcd.begin(16,2);
   lcd.setBacklight (HIGH);
   //Report.Robot = 1;
+  state[0] = Data[0];
+  state[1] = Data[1];
+  state[2] = Data[2];
+  lcd.setCursor (5,0);
+  lcd.print ("UNBALL");
+  lcd.setCursor(0,1);
+  lcd.print("FUTEBOL DE ROBOS");
 
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   ReceiveReport();
-  if(state[0] != Data[0].Message || state[1] != Data[1].Message || state[2] != Data[2].Message){
+  lcd.setCursor (11,0);
+  sprintf(test, "%d", u++);
+  lcd.print (" ");
+  if(state[0] != Data[0] || state[1] != Data[1] || state[2] != Data[2]){
     Serial.println(Report.Robot);
     Serial.println(Report.Message);
     Print_lcd();
-    state[0] = Data[0].Message;
-    state[1] = Data[1].Message;
-    state[2] = Data[2].Message;
+    state[0] = Data[0];
+    state[1] = Data[1];
+    state[2] = Data[2];
   }
-  delay(500);
+  
+  delay(100);
 }
 
 void RadioSetup(){
@@ -63,27 +78,33 @@ void RadioSetup(){
     radio.startListening();                 // Start listening
 }
 
-void NotReceivingFor(){
-  ctr++;
+void NotReceivingFor(int id){
+  ctr[id]++;
 }
 
 void ReceiveReport(){       //Function to receive data
   if(radio.available()){
-    ctr = 0;
-    while(radio.available()){
-        radio.read(&Report, sizeof(DataStruct));
-    }
+    ctr[3] = 0;
+    radio.read(&Report, sizeof(DataStruct));
     Serial.println("receiving");
-    Data[Report.Robot].Message = Report.Message;
-    Serial.println(Data[Report.Robot].Message);
+    Data[Report.Robot] = Report.Message;
+    ctr[Report.Robot] = 0;
+    Serial.println(Data[Report.Robot]);
   }
   else{
     Serial.println("not receiving");
-    NotReceivingFor();
-    if(ctr > 10){
-      Data[0].Message = 0;
-      Data[1].Message = 0;
-      Data[2].Message = 0;
+    NotReceivingFor(3);
+    for(int i=0; i<3; i++){
+    NotReceivingFor(i);
+    if(ctr[i]>80){
+      Data[i] = 0;
+    }
+  }
+    if(ctr[3] > 100){
+      ctr[3] = 151;
+      Data[0] = 0;
+      Data[1] = 0;
+      Data[2] = 0;
     }
   }
 }
@@ -96,7 +117,7 @@ void Clear_lcd(){
 }
 
 void Print_lcd(){
-  if (Data[0].Message == 0 && Data[1].Message == 0 && Data[1].Message == 0){
+  if (Data[0] == 0 && Data[1] == 0 && Data[2] == 0){
     Clear_lcd();
     lcd.setCursor (5,0);
     lcd.print ("UNBALL");
@@ -105,32 +126,32 @@ void Print_lcd(){
   }
   else{
     Clear_lcd();
-    lcd.setCursor (1,0);
+    lcd.setCursor (0,0);
     lcd.print ("R00");
     lcd.setCursor (6,0);
     lcd.print ("R01");
-    lcd.setCursor (11,0);
+    lcd.setCursor (12,0);
     lcd.print ("R02");
   
-    if (Data[0].Message == 1){
-      lcd.setCursor (1,1);
+    if (Data[0] == 1){
+      lcd.setCursor (0,1);
       lcd.print ("LOST");
     }
-    else if(Data[0].Message == 2){
-      lcd.setCursor (2,1);
+    else if(Data[0] == 2){
+      lcd.setCursor (0,1);
       lcd.print ("OK");
     }
     else{
-      lcd.setCursor (1,1);
+      lcd.setCursor (0,1);
       lcd.print ("OFF");
     }
     
-    if (Data[1].Message == 1){
+    if (Data[1] == 1){
       lcd.setCursor (6,1);
       lcd.print ("LOST");
     }
-    else if(Data[1].Message == 2){
-      lcd.setCursor (7,1);
+    else if(Data[1] == 2){
+      lcd.setCursor (6,1);
       lcd.print ("OK");
     }
     else{
@@ -138,16 +159,16 @@ void Print_lcd(){
       lcd.print ("OFF");
     }
     
-    if (Data[2].Message == 1){
-      lcd.setCursor (11,1);
+    if (Data[2] == 1){
+      lcd.setCursor (12,1);
       lcd.print ("LOST");
     }
-    else if(Data[2].Message == 2){
+    else if(Data[2] == 2){
       lcd.setCursor (12,1);
       lcd.print ("OK");
     }
     else{
-      lcd.setCursor (11,1);
+      lcd.setCursor (12,1);
       lcd.print ("OFF");
     }
   }
