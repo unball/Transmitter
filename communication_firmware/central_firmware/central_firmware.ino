@@ -20,8 +20,8 @@ uint64_t pipeRecebe=pipes[3];
 ros::NodeHandle nh;
 
 struct Velocidade{
-  int motorA;
-  int motorB;
+  int16_t motorA;
+  int16_t motorB;
 };
 
 Velocidade velocidades[3];

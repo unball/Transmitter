@@ -4,8 +4,8 @@
 #include <LiquidCrystal_I2C.h>
 
 struct DataStruct{
-    int Robot=0;
-    int Message=0;
+    int16_t Robot=0;
+    int16_t Message=0;
 };
 
 DataStruct Report;
@@ -59,7 +59,7 @@ void loop() {
     state[2] = Data[2];
   }
   
-  delay(100);
+  delay(25);
 }
 
 void RadioSetup(){
@@ -96,12 +96,12 @@ void ReceiveReport(){       //Function to receive data
     NotReceivingFor(3);
     for(int i=0; i<3; i++){
     NotReceivingFor(i);
-    if(ctr[i]>80){
+    if(ctr[i]>360){
       Data[i] = 0;
     }
   }
-    if(ctr[3] > 100){
-      ctr[3] = 151;
+    if(ctr[3] > 400){
+      ctr[3] = 401;
       Data[0] = 0;
       Data[1] = 0;
       Data[2] = 0;
