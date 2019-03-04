@@ -58,7 +58,9 @@ void repeteVelocidade(){
   radio.enableDynamicAck();
   for (int i=0; i<3; i++) {
     radio.openWritingPipe(pipes[i]);
-    radio.write(&velocidades[i],sizeof(velocidades[i]), 1);    
+    radio.write(&velocidades[i],sizeof(velocidades[i]), 1);
+    velocidades[i].motorA = 0;
+    velocidades[i].motorB = 0;  
   }
   radio.startListening();
 }
