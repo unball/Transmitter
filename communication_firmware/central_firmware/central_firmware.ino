@@ -62,7 +62,7 @@ void repeteVelocidade(){
     velocidades[i].motorA = 0;
     velocidades[i].motorB = 0;  
   }
-  radio.startListening();
+  //radio.startListening();
 }
 
 void radioSetup(){
