@@ -5,11 +5,11 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
-  message_generation
   rospy
   rosserial_arduino
   rosserial_client
   joy
+  message_generation
 )
 
 add_message_files (DIRECTORY msg FILES
@@ -17,6 +17,7 @@ add_message_files (DIRECTORY msg FILES
   target_positions_msg.msg
   wheels_speeds_msg.msg
   robots_speeds_msg.msg
+  trajectory.msg
 )
 
 include_directories(
@@ -33,9 +34,11 @@ link_directories(
   ${SDFormat_LIBRARY_DIRS}
 )
 
-generate_messages(DEPENDENCIES std_msgs)
+generate_messages(DEPENDENCIES
+ std_msgs
+)
 
-catkin_package()
+catkin_package(CATKIN_DEPENDS message_runtime)
 
 catkin_install_python(PROGRAMS joystick/joystick.py
                       DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
