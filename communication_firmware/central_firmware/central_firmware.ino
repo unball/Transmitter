@@ -3,19 +3,34 @@
 #include <ros.h>
 #include <ArduinoHardware.h>
 #include <communication/comm_msg.h>
+
+#define NUMBER_OF_ROBOTS 5
+#define NANO
+#ifndef NANO
+#define PRO_MICRO
+#endif
 /*************  USER Configuration *****************************/
 /***********radio***********/
 /*Radio pins*/
-//int CE = 10; //pro micro
-//int CS = A0; //pro micro
-int CE = 3; //nano
-int CS = 2; //nano
+#ifdef PRO_MICRO
+int CE = 10;
+int CS = A0;
+#else //nano
+int CE = 3;
+int CS = 2;
+#endif
                            
 RF24 radio(CE,CS);
 
-const uint64_t pipes[4] = { 0xABCDABCD71LL, 0x544d52687CLL , 0x644d52687CLL, 0x744d52687CLL};
-uint64_t pipeEnvia=pipes[0];
-uint64_t pipeRecebe=pipes[3];
+//const uint64_t pipes[4] = { 0xABCDABCD71LL, 0x544d52687CLL , 0x644d52687CLL, 0x744d52687CLL};
+const uint8_t adresses [NUMBER_OF_ROBOTS+1][5] = {{0xAB, 0xCD, 0xAB, 0xCD, 0x71},
+                                                  {0x54, 0x4D, 0x52, 0x68, 0x7C},
+                                                  {0x64, 0x4D, 0x52, 0x68, 0x7C},
+                                                  {0x74, 0x4D, 0x52, 0x68, 0x7C},
+                                                  {0x84, 0x4D, 0x52, 0x68, 0x7C},
+                                                  {0x94, 0x4D, 0x52, 0x68, 0x7C}};
+uint8_t pipeEnvia[5] = adresses[0];
+uint8_t pipeRecebe[5] = pipes[5];
 
 ros::NodeHandle nh;
 
@@ -24,12 +39,12 @@ struct Velocidade{
   int16_t motorB;
 };
 
-Velocidade velocidades[3];
+Velocidade velocidades[NUMBER_OF_ROBOTS];
 
 int menu;
 void motorVel( const communication::comm_msg& velocidadesdata){
    menu = velocidadesdata.menu;
-   for (int i=0; i<3; i++) {
+   for (int i=0; i<NUMBER_OF_ROBOTS; i++) {
     velocidades[i].motorA = velocidadesdata.MotorA[i];
     velocidades[i].motorB = velocidadesdata.MotorB[i];
    }
@@ -56,13 +71,12 @@ void loop(){
 void repeteVelocidade(){
   radio.stopListening();
   radio.enableDynamicAck();
-  for (int i=0; i<3; i++) {
-    radio.openWritingPipe(pipes[i]);
+  for (int i=0; i<NUMBER_OF_ROBOTS; i++) {
+    radio.openWritingPipe(adresses[i]);
     radio.write(&velocidades[i],sizeof(velocidades[i]), 1);
     velocidades[i].motorA = 0;
     velocidades[i].motorB = 0;  
   }
-  //radio.startListening();
 }
 
 void radioSetup(){
