@@ -2,7 +2,7 @@
 #include "RF24.h" // for radio
 #include <ros.h>
 #include <ArduinoHardware.h>
-#include <main_system/robot_msg.h>
+#include <ros_lib/main_system/robot_msg.h>
 
 void radioSetup();
 void repeteVelocidade();
@@ -123,13 +123,10 @@ void radioSetup(){
 bool readAndPrintRadio(){ // recebe mensagem via radio, se receber uma mensagem retorna true, se não retorna false
     vel data;
     
-    radio.startListening();
+    
 
      if(radio.available()){
       while(radio.available()){
-        data.time = 12345;
-        data.vel_A = 12345;
-        data.vel_B = 12345;
         radio.read(&data,sizeof(vel));
         Serial.print(data.time);
         Serial.print(",");
