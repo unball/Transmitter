@@ -25,24 +25,25 @@ class projectController():
         self.defineDesiredPoles(up, tp)
         self.findZero(self.phaseCondition())
         self.k = self.magCondition()
+        print("Continuos Controller:")
+        print("u'(t) = " +  str(self.k) + " * (e'(t) + " + str(-self.zeros[0]) + "e(t))")
+        
+    def discretize(self, T):
+        zero = np.exp(T*self.zeros[0])
+        pole = 1
+        s = np.pi*1/T*1j
+        z = -1 #exp(-s*T)
+        continuosGain = np.abs(self.k*(s-self.zeros[0])/s)
+        InvdiscretGain = (z-pole)/(z-zero)
+        discreteK = continuosGain*InvdiscretGain
+        print("\nDiscrete Controller(mached):")
+        print("u[k] = " +  str(discreteK) + " * (e[k] + " + str(zero) + "e[k-1]) + u[k-1]")
         
 
-pi = projectController()
-pi.definePIController()
-print(pi.zeros)
-print(pi.k)
-# so = -1+1j
-
-# poles = np.array([-1/tau])
-# poles = np.append(poles,0.0)
-# zeros = np.array([])
 
 
 
-
-# defineDesiredPoles(0.04, 0.035)
-# phase = phaseCondition(so, np.array([]), np.array([0+0j, -123.2590+0.0j]))
-# zero = findZero(so,phase)
-# np.append(zeros,zero)
-# k = magCondition(so, zeros,poles,gain)
-# print(k)
+if __name__ == "__main__":
+    pi = projectController()
+    pi.definePIController()
+    pi.discretize(0.002)
