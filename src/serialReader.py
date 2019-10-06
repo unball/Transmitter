@@ -1,7 +1,7 @@
 import serial
 import signal
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import numpy as np
 
 ser = serial.Serial("/dev/ttyUSB0", 115200)
@@ -35,7 +35,12 @@ while not stop:
     try:
         values = [float(x) for x in splitted]
         mainData = np.concatenate((mainData,[values]))
+        if mainData.size > 700:
+            np.savetxt("output", mainData, delimiter=',')
+            stop = True
+        
     except:
+        exit()
         pass
 
     #if data.size == points:
