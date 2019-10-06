@@ -1,6 +1,6 @@
 import numpy as np 
 
-class projectController():
+class ProjectController():
     def __init__(self,gain = 0.4/0.00811292, tau = 0.00811292):
         self.poles = np.array([-1/tau])
         self.zeros=np.array([])
