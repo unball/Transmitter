@@ -29,17 +29,17 @@ def find_params(xdata, ydata):
     popt, pcov = curve_fit(response, xdata, ydata)
     return popt, response(xdata, *popt)
 
-pA, rA = find_params(xdata, motorA)
-pB, rB = find_params(xdata, motorB)
+# pA, rA = find_params(xdata, motorA)
+# pB, rB = find_params(xdata, motorB)
 
-print(pA)
+# print(pA)
 
 plt.subplot(2,1,1)
-plt.plot(xdata, rA, 'r-')
+#plt.plot(xdata, rA, 'r-')
 plt.plot(xdata, motorA, 'b-')
 
 plt.subplot(2,1,2)
-plt.plot(xdata, rB, 'r-')
+#plt.plot(xdata, rB, 'r-')
 plt.plot(xdata, motorB, 'b-')
 
 plt.show()
