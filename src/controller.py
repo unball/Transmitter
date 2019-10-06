@@ -20,7 +20,7 @@ class projectController():
     def magCondition(self):
         return np.absolute(np.prod(self.so-self.poles)/(self.gain*np.prod(self.so-self.zeros)))
     
-    def definePIController(self, up=0.04, tp=0.035):
+    def definePIController(self, up=0.03, tp=0.035):
         self.poles = np.append(self.poles, 0.0)
         self.defineDesiredPoles(up, tp)
         self.findZero(self.phaseCondition())
@@ -37,11 +37,8 @@ class projectController():
         InvdiscretGain = (z-pole)/(z-zero)
         discreteK = continuosGain*InvdiscretGain
         print("\nDiscrete Controller(mached):")
-        print("u[k] = " +  str(discreteK) + " * (e[k] + " + str(zero) + "e[k-1]) + u[k-1]")
+        print("u[k] = " +  str(discreteK) + " * (e[k] + " + str(-zero) + "e[k-1]) + u[k-1]")
         
-
-
-
 
 if __name__ == "__main__":
     pi = projectController()
