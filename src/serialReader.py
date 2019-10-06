@@ -35,7 +35,7 @@ while not stop:
     try:
         values = [float(x) for x in splitted]
         mainData = np.concatenate((mainData,[values]))
-        if mainData.size > 700:
+        if mainData.size > 1000:
             np.savetxt("output", mainData, delimiter=',')
             stop = True
         

@@ -9,10 +9,10 @@ lines = f.readlines()
 
 data = np.array([[0,0,0,0,0]])
 
+#print(lines)
 for line in lines:
     newdata = list(map(lambda x: float(x), line.split(",")))
-    if len(newdata) == 5 and newdata[1] > 0: data = np.concatenate((data, [newdata]))
-
+    if len(newdata) == 5 : data = np.concatenate((data, [newdata]))
 
 data = data[1:]
 xdata = data[:,0]
@@ -35,10 +35,14 @@ def find_params(xdata, ydata):
 # print(pA)
 
 plt.subplot(2,1,1)
+#plt.axis([8.4,11.5, -25,25])
+plt.plot(xdata, data[:,1], 'k-')
 #plt.plot(xdata, rA, 'r-')
 plt.plot(xdata, motorA, 'b-')
 
 plt.subplot(2,1,2)
+plt.plot(xdata, data[:,3], 'k-')
+#plt.axis([8.4,11.5, -25,25])
 #plt.plot(xdata, rB, 'r-')
 plt.plot(xdata, motorB, 'b-')
 
