@@ -34,13 +34,15 @@ pB, rB = find_params(xdata, motorB)
 
 print(pA)
 
+lim = 100
+
 plt.subplot(2,1,1)
-plt.plot(xdata, rA, 'r-')
-plt.plot(xdata, motorA, 'b-')
+plt.plot(xdata[:lim], rA[:lim], 'r-')
+plt.plot(xdata[:lim], motorA[:lim], 'b-')
 
 plt.subplot(2,1,2)
-plt.plot(xdata, rB, 'r-')
-plt.plot(xdata, motorB, 'b-')
+plt.plot(xdata[:lim], rB[:lim], 'r-')
+plt.plot(xdata[:lim], motorB[:lim], 'b-')
 
 plt.show()
 
