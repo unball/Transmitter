@@ -30,7 +30,7 @@ struct Velocidade{
 /* Estrutura para a mensagem a ser recebida do USB */
 struct VelocidadeSerial {
   Velocidade data;
-  uint16_t checksum;
+  int16_t checksum;
 };
 
 /* Mensagem a ser transmitida */
@@ -38,17 +38,27 @@ Velocidade velocidades;
 
 /* Contagem de erros de transmissão via USB detectados */
 uint32_t erros = 0;
+uint32_t lastOK = 0;
 
 /* Loop de setup */
 void setup(void) {
   Serial.begin(115200);
-  radioSetup();
+  //radioSetup();
+  pinMode(LED_BUILTIN, OUTPUT);
 }
 
 /* Loop que é executado continuamente */
 void loop(){
   atualizaVelocidades();
-  enviaMensagem();
+  //enviaMensagem();
+  //recebeDadosDebug();
+  //enviaDebugSerial();
+  if(millis()-lastOK < 5){
+    digitalWrite(LED_BUILTIN, HIGH);
+  }
+  else{
+    digitalWrite(LED_BUILTIN, LOW);
+  }
 }
 
 /* Envia a mensagem pelo rádio */
@@ -111,7 +121,7 @@ void atualizaVelocidades(){
       Serial.readBytes((char*)(&receber), (size_t)sizeof(VelocidadeSerial));
 
       /* Faz o checksum */
-      uint16_t checksum = 0;
+      int16_t checksum = 0;
       for(int i=0 ; i<5 ; i++){
         checksum += receber.data.motorA[i] + receber.data.motorB[i];
       }
@@ -122,11 +132,12 @@ void atualizaVelocidades(){
         velocidades = receber.data;
 
         /* Reporta que deu certo */
-        Serial.println("OK");
+        Serial.printf("%d\t%d\t%d\n", checksum, velocidades.motorA[0], velocidades.motorB[0]);
+        lastOK = millis();
       }
       else {
         /* Devolve o checksum calculado se deu errado */
-        Serial.println(checksum);
+        Serial.printf("%d\t%d\t%d\n", checksum, velocidades.motorA[0], velocidades.motorB[0]);
       }
 
       /* Zera o contador */
