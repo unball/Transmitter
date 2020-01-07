@@ -11,8 +11,8 @@ void enviaMensagem();
 void atualizaVelocidades();
 
 /* Pinos para o rádio */
-int CE = 3;
-int CS = 2;
+int CE = 12;
+int CS = 13;
 
 /* Objeto que gerencia o rádio */
 RF24 radio(CE,CS);
@@ -43,14 +43,15 @@ uint32_t lastOK = 0;
 /* Loop de setup */
 void setup(void) {
   Serial.begin(115200);
-  //radioSetup();
+  while(!Serial);
+  radioSetup();
   pinMode(LED_BUILTIN, OUTPUT);
 }
 
 /* Loop que é executado continuamente */
 void loop(){
   atualizaVelocidades();
-  //enviaMensagem();
+  enviaMensagem();
   //recebeDadosDebug();
   //enviaDebugSerial();
   if(millis()-lastOK < 5){
@@ -59,12 +60,17 @@ void loop(){
   else{
     digitalWrite(LED_BUILTIN, LOW);
   }
+  //delay(5);
+  /*digitalWrite(LED_BUILTIN, HIGH);
+  sleep(1);
+  digitalWrite(LED_BUILTIN, LOW);
+  sleep(1);*/
 }
 
 /* Envia a mensagem pelo rádio */
 void enviaMensagem(){
   // Garante que o rádio não está escutando
-  radio.stopListening();
+  //radio.stopListening();
 
   // Permite chamadas de write sem ACK
   radio.enableDynamicAck();
@@ -101,11 +107,14 @@ void radioSetup(){
   
   // Start listening
   radio.startListening();
+
+  radio.stopListening();
 }
 
 /* Lê do serial novas velocidades */
 void atualizaVelocidades(){
   int initCounter = 0;
+    
   while(Serial.available()){
     /* Lê um caracter da mensagem */
     char character = Serial.read();
