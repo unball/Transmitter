@@ -1,14 +1,9 @@
 #include <SPI.h>
 #include "RF24.h"
-#include <ArduinoHardware.h>
 
 /* Definições */
 #define NUMBER_OF_ROBOTS 5
-
-/* Declaração das funções */
-void radioSetup();
-void enviaMensagem();
-void atualizaVelocidades();
+#define CONTROL_ID false
 
 /* Pinos para o rádio */
 int CE = 12;
@@ -21,10 +16,17 @@ RF24 radio(CE,CS);
 uint64_t txPipeAddress = 0xABCDABCD71L;
 uint64_t rxPipeAddress = 0x744d52687CL;
 
-/* Estrutura para a mensagem a ser transmitida */
+/* Estrutura para a mensagem a ser transmitida para o robô via rádio */
 struct Velocidade{
   int16_t motorA[5];
   int16_t motorB[5];
+};
+
+/* Estrutura para a mensagem a ser recebida do robô via rádio*/
+struct reportStruct{
+    uint32_t time;
+    int16_t va,vb;
+    float enca, encb;
 };
 
 /* Estrutura para a mensagem a ser recebida do USB */
@@ -32,6 +34,12 @@ struct VelocidadeSerial {
   Velocidade data;
   int16_t checksum;
 };
+
+/* Declaração das funções */
+void radioSetup();
+void sendData();
+bool receiveData(reportStruct *);
+void receiveUSBdata();
 
 /* Mensagem a ser transmitida */
 Velocidade velocidades;
@@ -50,25 +58,38 @@ void setup(void) {
 
 /* Loop que é executado continuamente */
 void loop(){
-  atualizaVelocidades();
-  enviaMensagem();
-  //recebeDadosDebug();
-  //enviaDebugSerial();
-  if(millis()-lastOK < 5){
-    digitalWrite(LED_BUILTIN, HIGH);
-  }
-  else{
-    digitalWrite(LED_BUILTIN, LOW);
-  }
-  //delay(5);
-  /*digitalWrite(LED_BUILTIN, HIGH);
-  sleep(1);
-  digitalWrite(LED_BUILTIN, LOW);
-  sleep(1);*/
+  #if CONTROL_ID
+
+    static struct reportStruct reportData;
+
+    // Recebe mensagem do rádio
+    if(receiveData(&reportData)){
+      // Envia pela serial USB
+      Serial.printf("%d %d %d %lf %lf\n", reportData.time, reportData.va, reportData.vb, reportData.enca, reportData.encb);
+    }
+
+  #else
+
+    // Recebe velocidades via USB
+    receiveUSBdata();
+
+    // Envia via rádio
+    sendData();
+
+    // Acende o LED se recebeu mensagem do USB em menos de 5ms
+    if(millis()-lastOK < 5){
+      digitalWrite(LED_BUILTIN, HIGH);
+    }
+    else{
+      digitalWrite(LED_BUILTIN, LOW);
+    }
+    
+  #endif
+
 }
 
 /* Envia a mensagem pelo rádio */
-void enviaMensagem(){
+void sendData(){
   // Garante que o rádio não está escutando
   //radio.stopListening();
 
@@ -80,6 +101,15 @@ void enviaMensagem(){
 
   // Envia a mensagem
   radio.write(&velocidades,sizeof(velocidades), 1);
+}  
+
+/* Recebe mensagem via radio, se receber uma mensagem retorna true, se não retorna false */
+bool receiveData(reportStruct *ret){
+  if(radio.available()){
+    radio.read(ret, sizeof(reportStruct));
+    return true;
+  }
+  return false;
 }
 
 /* Configura o rádio */
@@ -108,11 +138,13 @@ void radioSetup(){
   // Start listening
   radio.startListening();
 
-  radio.stopListening();
+  #if CONTROL_ID
+    radio.stopListening();
+  #endif
 }
 
 /* Lê do serial novas velocidades */
-void atualizaVelocidades(){
+void receiveUSBdata(){
   int initCounter = 0;
     
   while(Serial.available()){
