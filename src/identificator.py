@@ -58,7 +58,7 @@ def main():
     data = np.array(data)
 
     # Salva os dados em um arquivo
-    np.savetxt("deadzonedata.dat", data, delimiter=',')
+    np.savetxt("identificatordata.dat", data, delimiter=',')
 
     # Corrige os dados para segundos
     data[:,0] -= data[:,0][0]
