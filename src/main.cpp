@@ -138,7 +138,7 @@ void radioSetup(){
   // Start listening
   radio.startListening();
 
-  #if CONTROL_ID
+  #if !CONTROL_ID
     radio.stopListening();
   #endif
 }
