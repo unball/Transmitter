@@ -15,10 +15,10 @@ def find_params(xdata, ydata, A):
     return popt, response(xdata, *popt)
 
 # Estima os parâmetros da planta com base nos dados em data, onde data[:,0] é tempo, data[:,1] é velocidade e data[:,2] é encoder
-def parameterEstimator(data):
+def parameterEstimator(data, offset):
         
     # Gráfico inteiro
-    plt.subplot(2,2,1)
+    plt.subplot(2,2,1+offset)
     plt.plot(data[:,0], data[:,1], color='k')
     plt.plot(data[:,0], data[:,2], color='r')
 
@@ -26,7 +26,7 @@ def parameterEstimator(data):
     final = np.argmin(data[:,1] > 0)
     datap = data[:final]
 
-    plt.subplot(2,2,2)
+    plt.subplot(2,2,2+offset)
     plt.plot(datap[:,0], datap[:,1], color='k')
     plt.plot(datap[:,0], datap[:,2], color='r')
 
@@ -36,7 +36,10 @@ def parameterEstimator(data):
     
     return p
 
+data = []
+
 def main():
+    global data
     # Recebe do rádio
     serial = SerialReader("/dev/ttyUSB0", 115200)
 
@@ -44,10 +47,10 @@ def main():
     #serial = SerialReader("/dev/ttyACM0", 9600)
 
     # Dados a serem recebidos
-    data = []
+    #data = []
 
     # Recebe um buffer de dados
-    while data.size < BUFFER_SIZE-2:
+    while len(data) < BUFFER_SIZE-2:
         values = serial.read()
 
         # Concatena ao conjunto de dados lidos
@@ -65,12 +68,12 @@ def main():
     data[:,0] /= 1000000.0
 
     # Estima a planta do motor A
-    p = parameterEstimator(np.array([data[:,0], data[:,1], data[:,3]]).T)
+    p = parameterEstimator(np.array([data[:,0], data[:,1], data[:,3]]).T, 0)
     print("Motor A:")
     print(p)
 
     # Estima a planta do motor B
-    p = parameterEstimator(np.array([data[:,0], data[:,2], data[:,4]]).T)
+    p = parameterEstimator(np.array([data[:,0], data[:,2], data[:,4]]).T, 2)
     print("Motor B:")
     print(p)
 

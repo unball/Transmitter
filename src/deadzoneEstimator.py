@@ -5,6 +5,8 @@ import numpy as np
 
 BUFFER_SIZE = 3500
 
+# TODO: Usar scipy.optimize.curve_fit para estimar a deadzone
+
 # Encontra o índice do primeiro máximo de um conjunto de amostras
 def firstMax(samples,margin):
     currentmax = 0
@@ -93,7 +95,7 @@ def main():
     data = []
 
     # Recebe um buffer de dados
-    while data.size < BUFFER_SIZE-2:
+    while len(data) < BUFFER_SIZE-2:
         values = serial.read()
 
         # Concatena ao conjunto de dados lidos
