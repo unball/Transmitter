@@ -25,8 +25,10 @@ struct Velocidade{
 /* Estrutura para a mensagem a ser recebida do robô via rádio*/
 struct reportStruct{
     uint32_t time;
+    float v,w;
     int16_t va,vb;
     float enca, encb;
+    float imuw;
 };
 
 /* Estrutura para a mensagem a ser recebida do USB */
@@ -65,7 +67,7 @@ void loop(){
     // Recebe mensagem do rádio
     if(receiveData(&reportData)){
       // Envia pela serial USB
-      Serial.printf("%d %d %d %lf %lf\n", reportData.time, reportData.va, reportData.vb, reportData.enca, reportData.encb);
+      Serial.printf("%d %lf %lf %d %d %lf %lf %lf\n", reportData.time, reportData.v, reportData.w, reportData.va, reportData.vb, reportData.enca, reportData.encb, reportData.imuw);
     }
 
   #else

@@ -3,7 +3,7 @@ from serialReader import SerialReader
 import matplotlib.pyplot as plt
 import numpy as np
 
-BUFFER_SIZE = 3500
+BUFFER_SIZE = 1000
 
 # TODO: Usar scipy.optimize.curve_fit para estimar a deadzone
 
@@ -44,9 +44,9 @@ def getNegativeSamples(samples):
     return maxindex,minindex
 
 # Estima a deadzone com base nos dados em data, onde data[:,0] é tempo, data[:,1] é velocidade e data[:,2] é encoder
-def deadzoneEstimator(data):
+def deadzoneEstimator(data, offset):
     # Gráfico inteiro
-    plt.subplot(2,5,1)
+    plt.subplot(2,5,1+offset)
     plt.plot(data[:,0], data[:,1], color='k')
     plt.plot(data[:,0], data[:,2], color='r')
 
@@ -54,12 +54,12 @@ def deadzoneEstimator(data):
     ia, ib = getPositiveSamples(data[:,1])
     datap = data[ia:ib]
 
-    plt.subplot(2,5,2)
+    plt.subplot(2,5,2+offset)
     plt.plot(datap[:,0], datap[:,1], color='k')
     plt.plot(datap[:,0], datap[:,2], color='r')
 
     # Parte positiva vout x vin
-    plt.subplot(2,5,3)
+    plt.subplot(2,5,3+offset)
     plt.scatter(datap[:,1], datap[:,2], color='r', s=1)
     plt.plot(datap[:,1], datap[:,2], color='k')
 
@@ -70,12 +70,12 @@ def deadzoneEstimator(data):
     ia, ib = getNegativeSamples(data[:,1])
     datan = data[ia:ib]
 
-    plt.subplot(2,5,4)
+    plt.subplot(2,5,4+offset)
     plt.plot(datan[:,0], datan[:,1], color='k')
     plt.plot(datan[:,0], datan[:,2], color='r')
 
     # Parte negativa vout x vin
-    plt.subplot(2,5,5)
+    plt.subplot(2,5,5+offset)
     plt.scatter(datan[:,1], datan[:,2], color='r', s=1)
     plt.plot(datan[:,1], datan[:,2], color='k')
 
@@ -113,11 +113,11 @@ def main():
     data[:,0] /= 1000000.0
 
     # Estima a deadzone e plota os gráficos para análise do motor A
-    deadp, deadn = deadzoneEstimator(np.array([data[:,0], data[:,1], data[:,3]]).T)
+    deadp, deadn = deadzoneEstimator(np.array([data[:,0], data[:,3], data[:,5]]).T, 0)
     print("Motor A: deadzone positiva: {0}, deadzone negativa: {1}".format(deadp, deadn))
 
     # Estima a deadzone e plota os gráficos para análise do motor B
-    deadp, deadn = deadzoneEstimator(np.array([data[:,0], data[:,2], data[:,4]]).T)
+    deadp, deadn = deadzoneEstimator(np.array([data[:,0], data[:,4], data[:,6]]).T, 5)
     print("Motor B: deadzone positiva: {0}, deadzone negativa: {1}".format(deadp, deadn))
 
     plt.show()

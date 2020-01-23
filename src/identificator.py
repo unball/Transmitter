@@ -68,12 +68,12 @@ def main():
     data[:,0] /= 1000000.0
 
     # Estima a planta do motor A
-    p = parameterEstimator(np.array([data[:,0], data[:,1], data[:,3]]).T, 0)
+    p = parameterEstimator(np.array([data[:,0], data[:,3], data[:,5]]).T, 0)
     print("Motor A:")
     print(p)
 
     # Estima a planta do motor B
-    p = parameterEstimator(np.array([data[:,0], data[:,2], data[:,4]]).T, 2)
+    p = parameterEstimator(np.array([data[:,0], data[:,4], data[:,6]]).T, 2)
     print("Motor B:")
     print(p)
 
