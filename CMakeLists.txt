@@ -18,6 +18,7 @@ add_message_files (DIRECTORY msg FILES
   wheels_speeds_msg.msg
   robots_speeds_msg.msg
   trajectory.msg
+  VisionMessage.msg
 )
 
 include_directories(
