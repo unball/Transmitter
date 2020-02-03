@@ -106,7 +106,9 @@ void sendData(){
   radio.openWritingPipe(txPipeAddress);
 
   // Envia a mensagem
-  radio.write(&velocidades,sizeof(velocidades), 1);
+  if(radio.write(&velocidades,sizeof(velocidades), 0)){
+    lastOK = millis();
+  }
 }  
 
 /* Recebe mensagem via radio, se receber uma mensagem retorna true, se não retorna false */
@@ -180,7 +182,7 @@ void receiveUSBdata(){
 
         /* Reporta que deu certo */
         Serial.printf("%d\t%d\t%d\n", checksum, velocidades.motorA[0], velocidades.motorB[0]);
-        lastOK = millis();
+        
       }
       else {
         /* Devolve o checksum calculado se deu errado */
