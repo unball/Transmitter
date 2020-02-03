@@ -76,7 +76,11 @@ void loop(){
     receiveUSBdata();
 
     // Envia via rádio
-    sendData();
+		static int32_t t = micros();
+		if(micros()-t >= 1000){
+			t = micros();
+			sendData();
+		}
 
     // Acende o LED se recebeu mensagem do USB em menos de 5ms
     if(millis()-lastOK < 5){
