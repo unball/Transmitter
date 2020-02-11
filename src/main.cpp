@@ -2,7 +2,7 @@
 #include "RF24.h"
 
 /* Definições */
-#define NUMBER_OF_ROBOTS 5
+#define NUMBER_OF_ROBOTS 2
 #define CONTROL_ID false
 
 /* Pinos para o rádio */
@@ -13,13 +13,19 @@ int CS = 13;
 RF24 radio(CE,CS);
 
 /* Endereços */
+uint64_t txAddresses[] = {0xABCDABCD71LL, 0x544d52687CLL, 0x644d52687CLL};
 uint64_t txPipeAddress = 0xABCDABCD71L;
 uint64_t rxPipeAddress = 0x744d52687CL;
 
 /* Estrutura para a mensagem a ser transmitida para o robô via rádio */
 struct Velocidade{
-  int16_t motorA[5];
-  int16_t motorB[5];
+  int16_t v[5];
+  int16_t w[5];
+};
+
+struct VelocidadeRadio{
+  int16_t v;
+  int16_t w;
 };
 
 /* Estrutura para a mensagem a ser recebida do robô via rádio*/
@@ -77,7 +83,7 @@ void loop(){
 
     // Envia via rádio
 		static int32_t t = micros();
-		if(micros()-t >= 1000){
+		if(micros()-t >= 500){
 			t = micros();
 			sendData();
 		}
@@ -97,16 +103,24 @@ void loop(){
 /* Envia a mensagem pelo rádio */
 void sendData(){
   // Garante que o rádio não está escutando
-  //radio.stopListening();
+  radio.stopListening();
 
   // Permite chamadas de write sem ACK
   radio.enableDynamicAck();
 
-  // Abre um pipe para escrita
-  radio.openWritingPipe(txPipeAddress);
-
   // Envia a mensagem
-  if(radio.write(&velocidades,sizeof(velocidades), 0)){
+  bool result = true;
+
+  for(uint8_t i=0 ; i<NUMBER_OF_ROBOTS ; i++){
+    VelocidadeRadio vel = {.v = velocidades.v[i], .w = velocidades.w[i]};
+    
+    // Abre o pipe para escrita
+    radio.openWritingPipe(txAddresses[i]);
+
+    // Envia
+    result &= radio.write(&vel,sizeof(VelocidadeRadio), 1);
+  }
+  if(result){
     lastOK = millis();
   }
 }  
@@ -141,7 +155,7 @@ void radioSetup(){
   radio.enableDynamicPayloads();
 
   // ajusta o tamanho dos pacotes ao tamanho da mensagem
-  radio.setPayloadSize(sizeof(velocidades));
+  radio.setPayloadSize(sizeof(VelocidadeRadio));
   
   // Start listening
   radio.startListening();
@@ -172,7 +186,7 @@ void receiveUSBdata(){
       /* Faz o checksum */
       int16_t checksum = 0;
       for(int i=0 ; i<5 ; i++){
-        checksum += receber.data.motorA[i] + receber.data.motorB[i];
+        checksum += receber.data.v[i] + receber.data.w[i];
       }
 
       /* Verifica o checksum */
@@ -181,12 +195,16 @@ void receiveUSBdata(){
         velocidades = receber.data;
 
         /* Reporta que deu certo */
-        Serial.printf("%d\t%d\t%d\n", checksum, velocidades.motorA[0], velocidades.motorB[0]);
+        Serial.printf("%d\t%d\t%d\n", checksum, velocidades.v[0], velocidades.w[0]);
         
       }
       else {
         /* Devolve o checksum calculado se deu errado */
-        Serial.printf("%d\t%d\t%d\n", checksum, velocidades.motorA[0], velocidades.motorB[0]);
+        for(uint16_t i=0 ; i<sizeof(VelocidadeSerial) ; i++){
+          Serial.printf("%p ", ((char*)&receber)[i]);
+        }
+        Serial.println("");
+        //Serial.printf("%p\t%p\t%p\n", checksum, velocidades.v[0], velocidades.w[0]);
       }
 
       /* Zera o contador */
