@@ -3,7 +3,6 @@
 
 /* Definições */
 #define NUMBER_OF_ROBOTS 2
-#define CONTROL_ID false
 
 /* Pinos para o rádio */
 int CE = 12;
@@ -14,27 +13,16 @@ RF24 radio(CE,CS);
 
 /* Endereços */
 uint64_t txAddresses[] = {0xABCDABCD71LL, 0x544d52687CLL, 0x644d52687CLL};
-uint64_t txPipeAddress = 0xABCDABCD71L;
-uint64_t rxPipeAddress = 0x744d52687CL;
 
 /* Estrutura para a mensagem a ser transmitida para o robô via rádio */
 struct Velocidade{
-  int16_t v[5];
-  int16_t w[5];
+  int16_t vl[3];
+  int16_t vr[3];
 };
 
 struct VelocidadeRadio{
-  int16_t v;
-  int16_t w;
-};
-
-/* Estrutura para a mensagem a ser recebida do robô via rádio*/
-struct reportStruct{
-    uint32_t time;
-    float v,w;
-    int16_t va,vb;
-    float enca, encb;
-    float imuw;
+  int16_t vl;
+  int16_t vr;
 };
 
 /* Estrutura para a mensagem a ser recebida do USB */
@@ -46,7 +34,6 @@ struct VelocidadeSerial {
 /* Declaração das funções */
 void radioSetup();
 void sendData();
-bool receiveData(reportStruct *);
 void receiveUSBdata();
 
 /* Mensagem a ser transmitida */
@@ -66,18 +53,6 @@ void setup(void) {
 
 /* Loop que é executado continuamente */
 void loop(){
-  #if CONTROL_ID
-
-    static struct reportStruct reportData;
-
-    // Recebe mensagem do rádio
-    if(receiveData(&reportData)){
-      // Envia pela serial USB
-      Serial.printf("%d %lf %lf %d %d %lf %lf %lf\n", reportData.time, reportData.v, reportData.w, reportData.va, reportData.vb, reportData.enca, reportData.encb, reportData.imuw);
-    }
-
-  #else
-
     // Recebe velocidades via USB
     receiveUSBdata();
 
@@ -95,8 +70,6 @@ void loop(){
     else{
       digitalWrite(LED_BUILTIN, LOW);
     }
-    
-  #endif
 
 }
 
@@ -112,7 +85,7 @@ void sendData(){
   bool result = true;
 
   for(uint8_t i=0 ; i<NUMBER_OF_ROBOTS ; i++){
-    VelocidadeRadio vel = {.v = velocidades.v[i], .w = velocidades.w[i]};
+    VelocidadeRadio vel = {.vl = velocidades.vl[i], .vr = velocidades.vr[i]};
     
     // Abre o pipe para escrita
     radio.openWritingPipe(txAddresses[i]);
@@ -123,15 +96,6 @@ void sendData(){
   if(result){
     lastOK = millis();
   }
-}  
-
-/* Recebe mensagem via radio, se receber uma mensagem retorna true, se não retorna false */
-bool receiveData(reportStruct *ret){
-  if(radio.available()){
-    radio.read(ret, sizeof(reportStruct));
-    return true;
-  }
-  return false;
 }
 
 /* Configura o rádio */
@@ -148,21 +112,12 @@ void radioSetup(){
   // usa velocidade maxima
   radio.setDataRate(RF24_2MBPS);
 
-  // escuta pelo pipe1
-  radio.openReadingPipe(1,rxPipeAddress);
-
   // ativa payloads dinamicos(pacote tamamhos diferentes do padrao)
   radio.enableDynamicPayloads();
 
   // ajusta o tamanho dos pacotes ao tamanho da mensagem
   radio.setPayloadSize(sizeof(VelocidadeRadio));
-  
-  // Start listening
-  radio.startListening();
 
-  #if !CONTROL_ID
-    radio.stopListening();
-  #endif
 }
 
 /* Lê do serial novas velocidades */
@@ -185,8 +140,8 @@ void receiveUSBdata(){
 
       /* Faz o checksum */
       int16_t checksum = 0;
-      for(int i=0 ; i<5 ; i++){
-        checksum += receber.data.v[i] + receber.data.w[i];
+      for(int i=0 ; i<3 ; i++){
+        checksum += receber.data.vl[i] + receber.data.vr[i];
       }
 
       /* Verifica o checksum */
@@ -195,7 +150,7 @@ void receiveUSBdata(){
         velocidades = receber.data;
 
         /* Reporta que deu certo */
-        Serial.printf("%d\t%d\t%d\n", checksum, velocidades.v[0], velocidades.w[0]);
+        Serial.printf("%d\t%d\t%d\n", checksum, velocidades.vl[0], velocidades.vr[0]);
         
       }
       else {
