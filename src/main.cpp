@@ -1,5 +1,7 @@
 #include <SPI.h>
 #include "RF24.h"
+#include <ESP8266WiFi.h>
+#include <espnow.h>
 
 /* Definições */
 #define NUMBER_OF_ROBOTS 2
@@ -13,6 +15,9 @@ RF24 radio(CE,CS);
 
 /* Endereços */
 uint64_t txAddresses[] = {0xABCDABCD71LL, 0x544d52687CLL, 0x644d52687CLL};
+
+//Coloque na linha abaixo o Mac Address do NodeMCU receptor
+uint8_t broadcastAddress[] = {0x60, 0x01, 0x94, 0x0A, 0x87, 0x72};
 
 /* Estrutura para a mensagem a ser transmitida para o robô via rádio */
 struct Velocidade{
@@ -32,8 +37,8 @@ struct VelocidadeSerial {
 };
 
 /* Declaração das funções */
-void radioSetup();
-void sendData();
+void wifiSetup();
+void sendWifi();
 void receiveUSBdata();
 
 /* Mensagem a ser transmitida */
@@ -42,12 +47,22 @@ Velocidade velocidades;
 /* Contagem de erros de transmissão via USB detectados */
 uint32_t erros = 0;
 uint32_t lastOK = 0;
+bool result;
+
+//Callback quando os dados sao enviados
+void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus)
+{
+  if (sendStatus == 0)
+    result = true;
+  else
+    result = false;
+}
 
 /* Loop de setup */
 void setup(void) {
   Serial.begin(115200);
   while(!Serial);
-  radioSetup();
+  wifiSetup();
   pinMode(LED_BUILTIN, OUTPUT);
 }
 
@@ -60,7 +75,7 @@ void loop(){
 		static int32_t t = micros();
 		if(micros()-t >= 500){
 			t = micros();
-			sendData();
+      sendWifi();
 		}
 
     // Acende o LED se recebeu mensagem do USB em menos de 5ms
@@ -74,49 +89,38 @@ void loop(){
 }
 
 /* Envia a mensagem pelo rádio */
-void sendData(){
-  // Garante que o rádio não está escutando
-  radio.stopListening();
-
-  // Permite chamadas de write sem ACK
-  radio.enableDynamicAck();
-
+void sendWifi(){
+  
   // Envia a mensagem
-  bool result = true;
+  result = true;
 
   for(uint8_t i=0 ; i<NUMBER_OF_ROBOTS ; i++){
     VelocidadeRadio vel = {.vl = velocidades.vl[i], .vr = velocidades.vr[i]};
     
-    // Abre o pipe para escrita
-    radio.openWritingPipe(txAddresses[i]);
+    //Envia a mensagem usando o ESP-NOW
+    esp_now_send(broadcastAddress, (uint8_t *) &vel, sizeof(VelocidadeRadio));
 
-    // Envia
-    result &= radio.write(&vel,sizeof(VelocidadeRadio), 1);
   }
   if(result){
     lastOK = millis();
   }
 }
 
-/* Configura o rádio */
-void radioSetup(){
-  // inicializa radio
-  radio.begin();
+/* Configura o wi-fi */
+void wifiSetup(){
+  //Coloca o dispositivo no modo Wi-Fi Station
+  WiFi.mode(WIFI_STA);
 
-  // muda para um canal de frequencia diferente de 2.4Ghz
-  radio.setChannel(108);
+  //Inicializa o ESP-NOW
+  if (esp_now_init() != 0) {
+    Serial.println("Erro ao inicializar o ESP-NOW");
+    return;
+  }
+  esp_now_set_self_role(ESP_NOW_ROLE_CONTROLLER);
+  esp_now_register_send_cb(OnDataSent);
 
-  // usa potencia maxima
-  radio.setPALevel(RF24_PA_MAX);
-
-  // usa velocidade maxima
-  radio.setDataRate(RF24_2MBPS);
-
-  // ativa payloads dinamicos(pacote tamamhos diferentes do padrao)
-  radio.enableDynamicPayloads();
-
-  // ajusta o tamanho dos pacotes ao tamanho da mensagem
-  radio.setPayloadSize(sizeof(VelocidadeRadio));
+  //Registra o destinatario da mensagem
+  esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_SLAVE, 1, NULL, 0);
 
 }
 
