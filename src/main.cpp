@@ -4,7 +4,7 @@
 #include <espnow.h>
 
 /* Definições */
-#define NUMBER_OF_ROBOTS 2
+#define NUMBER_OF_ROBOTS 3
 
 /* Pinos para o rádio */
 int CE = 12;
