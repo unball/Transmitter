@@ -113,7 +113,6 @@ void wifiSetup(){
 
   //Inicializa o ESP-NOW
   if (esp_now_init() != 0) {
-    // Serial.println("Erro ao inicializar o ESP-NOW");
     return;
   }
   esp_now_set_self_role(ESP_NOW_ROLE_CONTROLLER);
