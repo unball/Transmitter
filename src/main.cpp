@@ -17,7 +17,7 @@ RF24 radio(CE,CS);
 uint64_t txAddresses[] = {0xABCDABCD71LL, 0x544d52687CLL, 0x644d52687CLL};
 
 //Coloque na linha abaixo o Mac Address do NodeMCU receptor
-uint8_t broadcastAddress[] = {0x60, 0x01, 0x94, 0x0A, 0x87, 0x72};
+uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 /* Estrutura para a mensagem a ser transmitida para o robô via rádio */
 struct Velocidade{
@@ -26,6 +26,7 @@ struct Velocidade{
 };
 
 struct VelocidadeRadio{
+  int16_t id;
   int16_t vl;
   int16_t vr;
 };
@@ -95,10 +96,11 @@ void sendWifi(){
   result = true;
 
   for(uint8_t i=0 ; i<NUMBER_OF_ROBOTS ; i++){
-    VelocidadeRadio vel = {.vl = velocidades.vl[i], .vr = velocidades.vr[i]};
+    VelocidadeRadio vel = {.id = i, .vl = velocidades.vl[i], .vr = velocidades.vr[i]};
     
     //Envia a mensagem usando o ESP-NOW
     esp_now_send(broadcastAddress, (uint8_t *) &vel, sizeof(VelocidadeRadio));
+    delay(3);
 
   }
   if(result){
