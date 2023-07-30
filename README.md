@@ -2,15 +2,8 @@
 
 ## Description 
 
-The radio transmitter count with one ESP32 and one radio transmitter nrf24l01. The pinout configuration can be seen on the image below: 
+The radio transmitter uses ESP8266. 
 
-![Pinout configuration Radio Transmitter NRF24L01 plus ESP32](/documentationImages/pinout-config.jpeg)
-
-> Note that:
-> - The team has 2 models for the ESP32 and the pinout configuration is different in each case
-> - MISO is equal to RX
-> - MOSI is equal to TX
-> - The wire of MISO and MOSI have to be twisted
 ## Installation
 
 This firmware is uploaded using the platformIO extention for VScode editor.
