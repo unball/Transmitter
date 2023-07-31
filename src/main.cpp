@@ -1,22 +1,11 @@
 #include <SPI.h>
-#include "RF24.h"
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 
 /* Definições */
 #define NUMBER_OF_ROBOTS 3
 
-/* Pinos para o rádio */
-int CE = 12;
-int CS = 13;
-
-/* Objeto que gerencia o rádio */
-RF24 radio(CE,CS);
-
-/* Endereços */
-uint64_t txAddresses[] = {0xABCDABCD71LL, 0x544d52687CLL, 0x644d52687CLL};
-
-//Coloque na linha abaixo o Mac Address do NodeMCU receptor
+//Endereço de broadcast,FF pois envia para todos
 uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 /* Estrutura para a mensagem a ser transmitida para o robô via rádio */
