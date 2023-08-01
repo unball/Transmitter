@@ -4,11 +4,15 @@
 
 /* Definições */
 #define NUMBER_OF_ROBOTS 3
+#define MAX_POWER 10.5  //TODO: Testar valores
+#define WIFI_CHANNEL 12  //TODO: Testar valores
 
 //Endereço de broadcast,FF pois envia para todos
 uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
-/* Estrutura para a mensagem a ser transmitida para o robô via rádio */
+boolean newData = false;     
+
+/* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
 struct Velocidade{
   int16_t vl[3];
   int16_t vr[3];
@@ -18,6 +22,7 @@ struct VelocidadeRadio{
   int16_t id;
   int16_t vl;
   int16_t vr;
+  int32_t checksum;
 };
 
 /* Estrutura para a mensagem a ser recebida do USB */
@@ -61,14 +66,13 @@ void loop(){
     // Recebe velocidades via USB
     receiveUSBdata();
 
-    // Envia via rádio
-		static int32_t t = micros();
-		if(micros()-t >= 500){
-			t = micros();
+    // Envia via Wi-Fi caso a mensagem seja nova
+    if (newData){
       sendWifi();
-		}
+      newData = false;
+    }
 
-    // Acende o LED se recebeu mensagem do USB em menos de 5ms
+    // Acende o LED se enviou mensagens em menos de 5ms
     if(millis()-lastOK < 5){
       digitalWrite(LED_BUILTIN, HIGH);
     }
@@ -80,18 +84,17 @@ void loop(){
 
 /* Envia a mensagem pelo rádio */
 void sendWifi(){
-  
-  // Envia a mensagem
-  result = true;
+
+  result = false;
 
   for(uint8_t i=0 ; i<NUMBER_OF_ROBOTS ; i++){
-    VelocidadeRadio vel = {.id = i, .vl = velocidades.vl[i], .vr = velocidades.vr[i]};
+    VelocidadeRadio vel = {.id = i, .vl = velocidades.vl[i], .vr = velocidades.vr[i], .checksum = i+velocidades.vl[i]+velocidades.vr[i]};
     
     //Envia a mensagem usando o ESP-NOW
     esp_now_send(broadcastAddress, (uint8_t *) &vel, sizeof(VelocidadeRadio));
     delay(3);
-
   }
+  
   if(result){
     lastOK = millis();
   }
@@ -101,6 +104,7 @@ void sendWifi(){
 void wifiSetup(){
   //Coloca o dispositivo no modo Wi-Fi Station
   WiFi.mode(WIFI_STA);
+  WiFi.setOutputPower(MAX_POWER);
 
   //Inicializa o ESP-NOW
   if (esp_now_init() != 0) {
@@ -110,7 +114,7 @@ void wifiSetup(){
   esp_now_register_send_cb(OnDataSent);
 
   //Registra o destinatario da mensagem
-  esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_SLAVE, 1, NULL, 0);
+  esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_SLAVE, WIFI_CHANNEL, NULL, 0);
 
 }
 
@@ -140,8 +144,10 @@ void receiveUSBdata(){
 
       /* Verifica o checksum */
       if(checksum == receber.checksum){
-        /* Copia para o buffer global de velocidades */
+        /* Copia para o buffer global de velocidades e indica que a mensagem é recente */
         velocidades = receber.data;
+
+        newData = true;
 
         /* Reporta que deu certo */
         Serial.printf("%d\t%d\t%d\n", checksum, velocidades.vl[0], velocidades.vr[0]);
