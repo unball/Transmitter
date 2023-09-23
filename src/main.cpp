@@ -20,6 +20,7 @@ struct MensagemWifi{
   int16_t id;
   int16_t vl;
   int16_t vr;
+  int32_t checksum;
 };
 
 /* Estrutura para a mensagem a ser recebida do USB */
@@ -63,14 +64,13 @@ void loop(){
     // Recebe velocidades via USB
     receiveUSBdata();
 
-    // Envia via rádio
-		static int32_t t = micros();
-		if(micros()-t >= 500){
-			t = micros();
+    // Envia via Wi-Fi caso a mensagem seja nova
+    if (newData){
       sendWifi();
-		}
+      newData = false;
+    }
 
-    // Acende o LED se recebeu mensagem do USB em menos de 5ms
+    // Acende o LED se enviou mensagens em menos de 5ms
     if(millis()-lastOK < 5){
       digitalWrite(LED_BUILTIN, HIGH);
     }
@@ -143,8 +143,10 @@ void receiveUSBdata(){
 
       /* Verifica o checksum */
       if(checksum == receber.checksum){
-        /* Copia para o buffer global de velocidades */
+        /* Copia para o buffer global de velocidades e indica que a mensagem é recente */
         velocidades = receber.data;
+
+        newData = true;
 
         /* Reporta que deu certo */
         Serial.printf("%d\t%d\t%d\n", checksum, velocidades.vl[0], velocidades.vr[0]);
