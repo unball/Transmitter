@@ -12,20 +12,20 @@ uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 /* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
 struct Velocidade{
-  int16_t vl[3];
-  int16_t vr[3];
+  double v[3];
+  double w[3];
 };
 
 struct MensagemWifi{
-  int16_t id;
-  int16_t vl;
-  int16_t vr;
+  uint8_t id;
+  double vl;
+  double vr;
 };
 
 /* Estrutura para a mensagem a ser recebida do USB */
 struct VelocidadeSerial {
   Velocidade data;
-  int16_t checksum;
+  double checksum;
 };
 
 /* Declaração das funções */
@@ -87,7 +87,7 @@ void sendWifi(){
   result = true;
 
   for(uint8_t i=0 ; i<NUMBER_OF_ROBOTS ; i++){
-    MensagemWifi vel = {.id = i, .vl = velocidades.vl[i], .vr = velocidades.vr[i]};
+    MensagemWifi vel = {.id = i, .vl = velocidades.v[i], .vr = velocidades.w[i]};
     
     //Envia a mensagem usando o ESP-NOW
     esp_now_send(broadcastAddress, (uint8_t *) &vel, sizeof(MensagemWifi));
@@ -136,9 +136,9 @@ void receiveUSBdata(){
       Serial.readBytes((char*)(&receber), (size_t)sizeof(VelocidadeSerial));
 
       /* Faz o checksum */
-      int16_t checksum = 0;
+      double checksum = 0;
       for(int i=0 ; i<3 ; i++){
-        checksum += receber.data.vl[i] + receber.data.vr[i];
+        checksum += receber.data.v[i] + receber.data.w[i];
       }
 
       /* Verifica o checksum */
@@ -147,7 +147,7 @@ void receiveUSBdata(){
         velocidades = receber.data;
 
         /* Reporta que deu certo */
-        Serial.printf("%d\t%d\t%d\n", checksum, velocidades.vl[0], velocidades.vr[0]);
+        Serial.printf("%f\t%f\t%f\n", checksum, velocidades.v[0], velocidades.w[0]);
         
       }
       else {
