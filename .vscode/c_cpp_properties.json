@@ -10,10 +10,8 @@
             "includePath": [
                 "/home/andre/unball/communication/include",
                 "/home/andre/unball/communication/src",
-                "/home/andre/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266WiFi/src",
-                "/home/andre/unball/communication/.pio/libdeps/d1_mini/RF24",
-                "/home/andre/unball/communication/.pio/libdeps/d1_mini/RF24/utility",
                 "/home/andre/.platformio/packages/framework-arduinoespressif8266/libraries/SPI",
+                "/home/andre/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266WiFi/src",
                 "/home/andre/.platformio/packages/framework-arduinoespressif8266/tools/sdk/include",
                 "/home/andre/.platformio/packages/framework-arduinoespressif8266/cores/esp8266",
                 "/home/andre/.platformio/packages/toolchain-xtensa/include",
@@ -61,10 +59,8 @@
                 "path": [
                     "/home/andre/unball/communication/include",
                     "/home/andre/unball/communication/src",
-                    "/home/andre/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266WiFi/src",
-                    "/home/andre/unball/communication/.pio/libdeps/d1_mini/RF24",
-                    "/home/andre/unball/communication/.pio/libdeps/d1_mini/RF24/utility",
                     "/home/andre/.platformio/packages/framework-arduinoespressif8266/libraries/SPI",
+                    "/home/andre/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266WiFi/src",
                     "/home/andre/.platformio/packages/framework-arduinoespressif8266/tools/sdk/include",
                     "/home/andre/.platformio/packages/framework-arduinoespressif8266/cores/esp8266",
                     "/home/andre/.platformio/packages/toolchain-xtensa/include",

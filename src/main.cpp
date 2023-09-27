@@ -1,31 +1,22 @@
 #include <SPI.h>
-#include "RF24.h"
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 
 /* Definições */
 #define NUMBER_OF_ROBOTS 3
+#define MAX_POWER 10.5  //TODO: Testar valores
+#define WIFI_CHANNEL 12  //TODO: Testar valores
 
-/* Pinos para o rádio */
-int CE = 12;
-int CS = 13;
-
-/* Objeto que gerencia o rádio */
-RF24 radio(CE,CS);
-
-/* Endereços */
-uint64_t txAddresses[] = {0xABCDABCD71LL, 0x544d52687CLL, 0x644d52687CLL};
-
-//Coloque na linha abaixo o Mac Address do NodeMCU receptor
+//Endereço de broadcast,FF pois envia para todos
 uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
-/* Estrutura para a mensagem a ser transmitida para o robô via rádio */
+/* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
 struct Velocidade{
   double v[3];
   double w[3];
 };
 
-struct VelocidadeRadio{
+struct MensagemWifi{
   uint8_t id;
   double vl;
   double vr;
@@ -91,18 +82,18 @@ void loop(){
 
 /* Envia a mensagem pelo rádio */
 void sendWifi(){
-  
+
   // Envia a mensagem
   result = true;
 
   for(uint8_t i=0 ; i<NUMBER_OF_ROBOTS ; i++){
-    VelocidadeRadio vel = {.id = i, .vl = velocidades.v[i], .vr = velocidades.w[i]};
+    MensagemWifi vel = {.id = i, .vl = velocidades.v[i], .vr = velocidades.w[i]};
     
     //Envia a mensagem usando o ESP-NOW
-    esp_now_send(broadcastAddress, (uint8_t *) &vel, sizeof(VelocidadeRadio));
+    esp_now_send(broadcastAddress, (uint8_t *) &vel, sizeof(MensagemWifi));
     delay(3);
-
   }
+  
   if(result){
     lastOK = millis();
   }
@@ -112,6 +103,7 @@ void sendWifi(){
 void wifiSetup(){
   //Coloca o dispositivo no modo Wi-Fi Station
   WiFi.mode(WIFI_STA);
+  WiFi.setOutputPower(MAX_POWER);
 
   //Inicializa o ESP-NOW
   if (esp_now_init() != 0) {
@@ -121,7 +113,7 @@ void wifiSetup(){
   esp_now_register_send_cb(OnDataSent);
 
   //Registra o destinatario da mensagem
-  esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_SLAVE, 1, NULL, 0);
+  esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_SLAVE, WIFI_CHANNEL, NULL, 0);
 
 }
 
