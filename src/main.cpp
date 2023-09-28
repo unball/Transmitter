@@ -15,22 +15,22 @@ uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 /* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
 struct Velocities{
   bool control;
-  double v[3];
-  double w[3];
+  int16_t v[3];
+  int16_t w[3];
 };
 
 #if PID_TUNNER
 struct snd_message{
   uint8_t id;
-  float kp;
-  float ki;
-  float kd;
+  int16_t kp;
+  int16_t ki;
+  int16_t kd;
 };
 
 snd_message send_commands;
 
 struct rcv_message{
-  double value;
+  float value;
 };
 
 rcv_message rcv_commands;
@@ -54,7 +54,7 @@ struct snd_message{
 struct SerialVelocities {
   bool control;
   Velocities data;
-  double checksum;
+  int16_t checksum;
 };
 
 
@@ -177,7 +177,7 @@ void receiveUSBdata(){
       Serial.readBytes((char*)(&receive), (size_t)sizeof(SerialConstants));
 
       /* Does the checksum */
-      double checksum = 0;
+      int16_t checksum = 0;
       checksum = receive.data.kp + receive.data.ki + receive.data.kp;
       
 
@@ -251,7 +251,7 @@ void receiveUSBdata(){
       Serial.readBytes((char*)(&receber), (size_t)sizeof(SerialVelocities));
 
       /* Faz o checksum */
-      double checksum = 0;
+      int16_t checksum = 0;
       for(int i=0 ; i<3 ; i++){
         checksum += receber.data.v[i] + receber.data.w[i];
       }
