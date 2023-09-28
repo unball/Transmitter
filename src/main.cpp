@@ -5,7 +5,6 @@
 #define PID_TUNNER false
 
 /* Definitions */
-#define NUMBER_OF_ROBOTS 3
 #define MAX_POWER 10.5  //TODO: Test values
 #define WIFI_CHANNEL 12  //TODO: Test values
 
@@ -125,7 +124,7 @@ void sendWifi(){
 
   result = true;
 
-  for(uint8_t i=0 ; i<NUMBER_OF_ROBOTS ; i++){
+  for(uint8_t i=0 ; i<3 ; i++){
     snd_message control_constants = {.id = i, .kp = 1.0, .ki = 1.0, .kd = 1.0};
     
     /* Sends the message using ESP-NOW */
@@ -200,7 +199,7 @@ void sendWifi(){
 
   result = true;
 
-  for(uint8_t i=0 ; i<NUMBER_OF_ROBOTS ; i++){
+  for(uint8_t i=0 ; i<3 ; i++){
     snd_message vel = {.control = velocities.control, .id = i, .vl = velocities.v[i], .vr = velocities.w[i]};
     
     /* Sends the message using ESP-NOW */
