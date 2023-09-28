@@ -6,14 +6,15 @@
 
 /* Definitions */
 #define NUMBER_OF_ROBOTS 3
-#define MAX_POWER 10.5  //TODO: Testar valores
-#define WIFI_CHANNEL 12  //TODO: Testar valores
+#define MAX_POWER 10.5  //TODO: Test values
+#define WIFI_CHANNEL 12  //TODO: Test values
 
 /* Broadcast address, sends to everyone */
 uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 /* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
 struct Velocities{
+  bool control;
   double v[3];
   double w[3];
 };
@@ -42,6 +43,7 @@ struct SerialConstants {
 
 #else
 struct snd_message{
+  bool control;
   uint8_t id;
   double vl;
   double vr;
@@ -50,6 +52,7 @@ struct snd_message{
 
 /* Estrutura para a mensagem a ser recebida do USB */
 struct SerialVelocities {
+  bool control;
   Velocities data;
   double checksum;
 };
@@ -198,7 +201,7 @@ void sendWifi(){
   result = true;
 
   for(uint8_t i=0 ; i<NUMBER_OF_ROBOTS ; i++){
-    snd_message vel = {.id = i, .vl = velocities.v[i], .vr = velocities.w[i]};
+    snd_message vel = {.control = velocities.control, .id = i, .vl = velocities.v[i], .vr = velocities.w[i]};
     
     /* Sends the message using ESP-NOW */
     esp_now_send(broadcastAddress, (uint8_t *) &vel, sizeof(snd_message));
