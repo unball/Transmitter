@@ -42,10 +42,10 @@ struct SerialConstants {
 
 #else
 struct snd_message{
-  bool control;
+  uint8_t control;
   uint8_t id;
-  double vl;
-  double vr;
+  int16_t v;
+  int16_t w;
 };
 #endif
 
@@ -199,10 +199,10 @@ void sendWifi(){
   result = true;
 
   for(uint8_t i=0 ; i<3 ; i++){
-    snd_message vel = {.control = true, .id = i, .vl = robot_message.v[i], .vr = robot_message.w[i]};
+    snd_message msg = {.control = true, .id = i, .v = robot_message.v[i], .w = robot_message.w[i]};
     
     /* Sends the message using ESP-NOW */
-    esp_now_send(broadcastAddress, (uint8_t *) &vel, sizeof(snd_message));
+    esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(snd_message));
     delay(3);
   }
   
