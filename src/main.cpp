@@ -12,8 +12,8 @@
 uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 /* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
-struct Velocities{
-  bool control;
+struct RobotMessage{
+  int16_t control;
   int16_t v[3];
   int16_t w[3];
 };
@@ -50,12 +50,10 @@ struct snd_message{
 #endif
 
 /* Estrutura para a mensagem a ser recebida do USB */
-struct SerialVelocities {
-  bool control;
-  Velocities data;
+struct SerialMessage {
+  RobotMessage data;
   int16_t checksum;
 };
-
 
 /* Declaração das funções */
 void wifiSetup();
@@ -63,7 +61,7 @@ void sendWifi();
 void receiveUSBdata();
 
 /* Mensagem a ser transmitida */
-Velocities velocities;
+RobotMessage robot_message;
 
 /* Contagem de erros de transmissão via USB detectados */
 uint32_t erros = 0;
@@ -98,7 +96,7 @@ void setup(void) {
 
 /* Loop que é executado continuamente */
 void loop(){
-    // Recebe velocities via USB
+    // Recebe robot_message via USB
     receiveUSBdata();
 
     // Envia via rádio
@@ -157,7 +155,7 @@ void wifiSetup(){
 
 }
 
-/* Reads new velocities from serial */
+/* Reads new robot_message from serial */
 void receiveUSBdata(){
   int initCounter = 0;
     
@@ -184,7 +182,7 @@ void receiveUSBdata(){
       if(checksum == receive.checksum){
         /* Copies to the global velocity buffer */
         send_commands = receive.data;
-        // velocities = receive.data;
+        // robot_message = receive.data;
       }
 
       /* Reset the counter */
@@ -194,13 +192,14 @@ void receiveUSBdata(){
 }
 
 #else
+
 /* Sends the message via Wi-Fi */
 void sendWifi(){
 
   result = true;
 
   for(uint8_t i=0 ; i<3 ; i++){
-    snd_message vel = {.control = velocities.control, .id = i, .vl = velocities.v[i], .vr = velocities.w[i]};
+    snd_message vel = {.control = true, .id = i, .vl = robot_message.v[i], .vr = robot_message.w[i]};
     
     /* Sends the message using ESP-NOW */
     esp_now_send(broadcastAddress, (uint8_t *) &vel, sizeof(snd_message));
@@ -231,7 +230,7 @@ void wifiSetup(){
   esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_SLAVE, WIFI_CHANNEL, NULL, 0);
 }
 
-/* Reads new velocities from serial */
+/* Reads new robot_message from serial */
 void receiveUSBdata(){
   int initCounter = 0;
     
@@ -244,33 +243,33 @@ void receiveUSBdata(){
 
     /* Se os três primeiros caracteres são 'B' então de fato é o início da mensagem */
     if(initCounter >= 3){
-      SerialVelocities receber;
+      SerialMessage receive;
       
       /* Lê a mensagem até o caracter de terminação e a decodifica */
-      Serial.readBytes((char*)(&receber), (size_t)sizeof(SerialVelocities));
+      Serial.readBytes((char*)(&receive), (size_t)sizeof(SerialMessage));
 
       /* Faz o checksum */
       int16_t checksum = 0;
       for(int i=0 ; i<3 ; i++){
-        checksum += receber.data.v[i] + receber.data.w[i];
+        checksum += receive.data.v[i] + receive.data.w[i];
       }
 
       /* Verifica o checksum */
-      if(checksum == receber.checksum){
-        /* Copia para o buffer global de velocities */
-        velocities = receber.data;
+      if(checksum == receive.checksum){
+        /* Copia para o buffer global de robot_message */
+        robot_message = receive.data;
 
         /* Reporta que deu certo */
-        Serial.printf("%f\t%f\t%f\n", checksum, velocities.v[0], velocities.w[0]);
+        Serial.printf("%d\t%d\t%d\n", checksum, robot_message.v[0], robot_message.w[0]);
         
       }
       else {
         /* Devolve o checksum calculado se deu errado */
-        for(uint16_t i=0 ; i<sizeof(SerialVelocities) ; i++){
-          Serial.printf("%p ", ((char*)&receber)[i]);
+        for(uint16_t i=0 ; i<sizeof(SerialMessage) ; i++){
+          Serial.printf("%p ", ((char*)&receive)[i]);
         }
         Serial.println("");
-        //Serial.printf("%p\t%p\t%p\n", checksum, velocities.v[0], velocities.w[0]);
+        //Serial.printf("%p\t%p\t%p\n", checksum, robot_message.v[0], robot_message.w[0]);
       }
 
       /* Zera o contador */
