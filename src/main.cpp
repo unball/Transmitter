@@ -199,7 +199,7 @@ void sendWifi(){
   result = true;
 
   for(uint8_t i=0 ; i<3 ; i++){
-    snd_message msg = {.control = true, .id = i, .v = robot_message.v[i], .w = robot_message.w[i]};
+    snd_message msg = {.control = robot_message.control, .id = i, .v = robot_message.v[i], .w = robot_message.w[i]};
     
     /* Sends the message using ESP-NOW */
     esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(snd_message));
