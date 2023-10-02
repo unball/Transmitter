@@ -3,8 +3,10 @@
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 
-/* Definições */
-#define NUMBER_OF_ROBOTS 3
+
+/* Wi-Fi configs*/
+const float MAX_POWER = 10.0; // Max: 20.5dB, Min: 0dB
+const uint8_t WIFI_CHANNEL = 12; 
 
 /* Pinos para o rádio */
 int CE = 12;
@@ -95,7 +97,7 @@ void sendWifi(){
   // Envia a mensagem
   result = true;
 
-  for(uint8_t i=0 ; i<NUMBER_OF_ROBOTS ; i++){
+  for(uint8_t i=0 ; i<3 ; i++){
     VelocidadeRadio vel = {.id = i, .vl = velocidades.vl[i], .vr = velocidades.vr[i]};
     
     //Envia a mensagem usando o ESP-NOW
@@ -113,6 +115,9 @@ void wifiSetup(){
   //Coloca o dispositivo no modo Wi-Fi Station
   WiFi.mode(WIFI_STA);
 
+  /* Sets the output power in dB*/
+  WiFi.setOutputPower(MAX_POWER);
+
   //Inicializa o ESP-NOW
   if (esp_now_init() != 0) {
     return;
@@ -121,7 +126,7 @@ void wifiSetup(){
   esp_now_register_send_cb(OnDataSent);
 
   //Registra o destinatario da mensagem
-  esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_SLAVE, 1, NULL, 0);
+  esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_SLAVE, WIFI_CHANNEL, NULL, 0);
 
 }
 
