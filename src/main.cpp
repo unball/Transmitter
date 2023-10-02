@@ -5,7 +5,7 @@
 
 
 /* Wi-Fi configs*/
-const float MAX_POWER = 10.5;
+const float MAX_POWER = 10.0; // Max: 20.5dB, Min: 0dB
 const uint8_t WIFI_CHANNEL = 12; 
 
 /* Pinos para o rádio */
