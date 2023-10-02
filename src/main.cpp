@@ -6,7 +6,7 @@
 
 /* Wi-Fi configs*/
 const float MAX_POWER = 10.5;
-const int WIFI_CHANNEL = 12; 
+const uint8_t WIFI_CHANNEL = 12; 
 
 /* Pinos para o rádio */
 int CE = 12;
