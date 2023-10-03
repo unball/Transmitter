@@ -91,3 +91,7 @@ ENV/
 # Sublime project
 *.sublime-project
 *.sublime-workspace
+
+*.vscode
+.vscode
+vscode
