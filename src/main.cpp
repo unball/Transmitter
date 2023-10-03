@@ -13,9 +13,8 @@ uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 /* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
 struct RobotMessage{
-  int16_t control;
-  int16_t v[3];
-  int16_t w[3];
+  int16_t vl[3];
+  int16_t vr[3];
 };
 
 #if PID_TUNNER
@@ -42,10 +41,9 @@ struct SerialConstants {
 
 #else
 struct snd_message{
-  uint8_t control;
-  uint8_t id;
-  int16_t v;
-  int16_t w;
+  int16_t id;
+  int16_t vl;
+  int16_t vr;
 };
 #endif
 
@@ -199,7 +197,7 @@ void sendWifi(){
   result = true;
 
   for(uint8_t i=0 ; i<3 ; i++){
-    snd_message msg = {.control = (uint8_t)robot_message.control, .id = i, .v = robot_message.v[i], .w = robot_message.w[i]};
+    snd_message msg = {.id = i, .vl = robot_message.vl[i], .vr = robot_message.vr[i]};
     
     /* Sends the message using ESP-NOW */
     esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(snd_message));
@@ -251,7 +249,7 @@ void receiveUSBdata(){
       /* Faz o checksum */
       int16_t checksum = 0;
       for(int i=0 ; i<3 ; i++){
-        checksum += receive.data.v[i] + receive.data.w[i];
+        checksum += receive.data.vl[i] + receive.data.vr[i];
       }
 
       /* Verifica o checksum */
@@ -260,7 +258,7 @@ void receiveUSBdata(){
         robot_message = receive.data;
 
         /* Reporta que deu certo */
-        Serial.printf("%d\t%d\t%d\n", checksum, robot_message.v[0], robot_message.w[0]);
+        Serial.printf("%d\t%d\t%d\n", checksum, robot_message.vl[0], robot_message.vr[0]);
         
       }
       else {
