@@ -93,3 +93,6 @@ ENV/
 *.sublime-workspace
 
 *.json
+*.vscode
+.vscode
+vscode
