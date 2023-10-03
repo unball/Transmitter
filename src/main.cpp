@@ -5,7 +5,7 @@
 #define PID_TUNNER false
 
 /* Definitions */
-#define MAX_POWER 10.5  //TODO: Test values
+#define MAX_POWER 10.0  //TODO: Test values
 #define WIFI_CHANNEL 12  //TODO: Test values
 
 /* Broadcast address, sends to everyone */
