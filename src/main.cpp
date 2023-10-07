@@ -1,41 +1,55 @@
 #include <SPI.h>
-#include "RF24.h"
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 
+#define PID_TUNNER false
 
-/* Wi-Fi configs*/
-const float MAX_POWER = 10.0; // Max: 20.5dB, Min: 0dB
-const uint8_t WIFI_CHANNEL = 12; 
+/* Definitions */
+#define MAX_POWER 10.0  //TODO: Test values
+#define WIFI_CHANNEL 12  //TODO: Test values
 
-/* Pinos para o rádio */
-int CE = 12;
-int CS = 13;
-
-/* Objeto que gerencia o rádio */
-RF24 radio(CE,CS);
-
-/* Endereços */
-uint64_t txAddresses[] = {0xABCDABCD71LL, 0x544d52687CLL, 0x644d52687CLL};
-
-//Coloque na linha abaixo o Mac Address do NodeMCU receptor
+/* Broadcast address, sends to everyone */
 uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
-/* Estrutura para a mensagem a ser transmitida para o robô via rádio */
-struct Velocidade{
+/* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
+struct RobotMessage{
   int16_t vl[3];
   int16_t vr[3];
 };
 
-struct VelocidadeRadio{
+#if PID_TUNNER
+struct snd_message{
+  uint8_t id;
+  int16_t kp;
+  int16_t ki;
+  int16_t kd;
+};
+
+snd_message send_commands;
+
+struct rcv_message{
+  float value;
+};
+
+rcv_message rcv_commands;
+
+/* Struct for the message to be received from USB */
+struct SerialConstants {
+  snd_message data;
+  double checksum;
+};
+
+#else
+struct snd_message{
   int16_t id;
   int16_t vl;
   int16_t vr;
 };
+#endif
 
 /* Estrutura para a mensagem a ser recebida do USB */
-struct VelocidadeSerial {
-  Velocidade data;
+struct SerialMessage {
+  RobotMessage data;
   int16_t checksum;
 };
 
@@ -45,14 +59,14 @@ void sendWifi();
 void receiveUSBdata();
 
 /* Mensagem a ser transmitida */
-Velocidade velocidades;
+RobotMessage robot_message;
 
 /* Contagem de erros de transmissão via USB detectados */
 uint32_t erros = 0;
 uint32_t lastOK = 0;
 bool result;
 
-//Callback quando os dados sao enviados
+//Callback when data is sent
 void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus)
 {
   if (sendStatus == 0)
@@ -60,6 +74,15 @@ void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus)
   else
     result = false;
 }
+
+#if PID_TUNNER
+// Callback function, execute when message is sent via Wi-Fi
+void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len){
+  memcpy(&rcv_commands, incomingData, sizeof(rcv_commands));
+  Serial.println(rcv_commands.value);
+  delay(2);
+}
+#endif
 
 /* Loop de setup */
 void setup(void) {
@@ -71,7 +94,7 @@ void setup(void) {
 
 /* Loop que é executado continuamente */
 void loop(){
-    // Recebe velocidades via USB
+    // Recebe robot_message via USB
     receiveUSBdata();
 
     // Envia via rádio
@@ -91,46 +114,121 @@ void loop(){
 
 }
 
-/* Envia a mensagem pelo rádio */
+#if PID_TUNNER
+/* Sends the message via Wi-Fi */
 void sendWifi(){
-  
-  // Envia a mensagem
+
   result = true;
 
   for(uint8_t i=0 ; i<3 ; i++){
-    VelocidadeRadio vel = {.id = i, .vl = velocidades.vl[i], .vr = velocidades.vr[i]};
+    snd_message control_constants = {.id = i, .kp = 1.0, .ki = 1.0, .kd = 1.0};
     
-    //Envia a mensagem usando o ESP-NOW
-    esp_now_send(broadcastAddress, (uint8_t *) &vel, sizeof(VelocidadeRadio));
+    /* Sends the message using ESP-NOW */
+    esp_now_send(broadcastAddress, (uint8_t *) &control_constants, sizeof(snd_message));
     delay(3);
-
   }
+  
   if(result){
     lastOK = millis();
   }
 }
 
-/* Configura o wi-fi */
+/* Setup the Wi-Fi  */
 void wifiSetup(){
-  //Coloca o dispositivo no modo Wi-Fi Station
+  /* Puts the device in Wi-Fi Station mode */
   WiFi.mode(WIFI_STA);
 
-  /* Sets the output power in dB*/
   WiFi.setOutputPower(MAX_POWER);
 
-  //Inicializa o ESP-NOW
+  /* Initialize the ESP-NOW */
+  if (esp_now_init() != 0) {
+    return;
+  }
+  esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
+  esp_now_register_send_cb(OnDataSent);
+  esp_now_register_recv_cb(OnDataRecv);
+  
+  /* Registers the receiver of the message */
+  esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_COMBO, WIFI_CHANNEL, NULL, 0);
+
+}
+
+/* Reads new robot_message from serial */
+void receiveUSBdata(){
+  int initCounter = 0;
+    
+  while(Serial.available()){
+    /* Reads a character from the message */
+    char character = Serial.read();
+
+    /* Increments the counter if it's 'T' */
+    if(character == 'T') initCounter++;
+
+    /* If the first characters are 'T', then in fact it is the beginning of the message */
+    if(initCounter >= 3){
+      SerialConstants receive;
+
+      /* Reads the message until the finishing character then decode it */
+      Serial.readBytes((char*)(&receive), (size_t)sizeof(SerialConstants));
+
+      /* Does the checksum */
+      int16_t checksum = 0;
+      checksum = receive.data.kp + receive.data.ki + receive.data.kp;
+      
+
+      /* Verifies o checksum */
+      if(checksum == receive.checksum){
+        /* Copies to the global velocity buffer */
+        send_commands = receive.data;
+        // robot_message = receive.data;
+      }
+
+      /* Reset the counter */
+      initCounter = 0;
+    }
+  }
+}
+
+#else
+
+/* Sends the message via Wi-Fi */
+void sendWifi(){
+
+  result = true;
+
+  for(uint8_t i=0 ; i<3 ; i++){
+    snd_message msg = {.id = i, .vl = robot_message.vl[i], .vr = robot_message.vr[i]};
+    
+    /* Sends the message using ESP-NOW */
+    esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(snd_message));
+    delay(3);
+  }
+  
+  if(result){
+    lastOK = millis();
+  }
+}
+
+/* Setup the Wi-Fi  */
+void wifiSetup(){
+  /* Puts the device in Wi-Fi Station mode */
+  WiFi.mode(WIFI_STA);
+
+  WiFi.setOutputPower(MAX_POWER);
+
+  /* Initialize the ESP-NOW */
   if (esp_now_init() != 0) {
     return;
   }
   esp_now_set_self_role(ESP_NOW_ROLE_CONTROLLER);
   esp_now_register_send_cb(OnDataSent);
 
-  //Registra o destinatario da mensagem
+  
+  /* Registers the receiver of the message */
   esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_SLAVE, WIFI_CHANNEL, NULL, 0);
-
 }
 
-/* Lê do serial novas velocidades */
+/* Reads new robot_message from serial */
 void receiveUSBdata(){
   int initCounter = 0;
     
@@ -143,33 +241,33 @@ void receiveUSBdata(){
 
     /* Se os três primeiros caracteres são 'B' então de fato é o início da mensagem */
     if(initCounter >= 3){
-      VelocidadeSerial receber;
+      SerialMessage receive;
       
       /* Lê a mensagem até o caracter de terminação e a decodifica */
-      Serial.readBytes((char*)(&receber), (size_t)sizeof(VelocidadeSerial));
+      Serial.readBytes((char*)(&receive), (size_t)sizeof(SerialMessage));
 
       /* Faz o checksum */
       int16_t checksum = 0;
       for(int i=0 ; i<3 ; i++){
-        checksum += receber.data.vl[i] + receber.data.vr[i];
+        checksum += receive.data.vl[i] + receive.data.vr[i];
       }
 
       /* Verifica o checksum */
-      if(checksum == receber.checksum){
-        /* Copia para o buffer global de velocidades */
-        velocidades = receber.data;
+      if(checksum == receive.checksum){
+        /* Copia para o buffer global de robot_message */
+        robot_message = receive.data;
 
         /* Reporta que deu certo */
-        Serial.printf("%d\t%d\t%d\n", checksum, velocidades.vl[0], velocidades.vr[0]);
+        Serial.printf("%d\t%d\t%d\n", checksum, robot_message.vl[0], robot_message.vr[0]);
         
       }
       else {
         /* Devolve o checksum calculado se deu errado */
-        for(uint16_t i=0 ; i<sizeof(VelocidadeSerial) ; i++){
-          Serial.printf("%p ", ((char*)&receber)[i]);
+        for(uint16_t i=0 ; i<sizeof(SerialMessage) ; i++){
+          Serial.printf("%p ", ((char*)&receive)[i]);
         }
         Serial.println("");
-        //Serial.printf("%p\t%p\t%p\n", checksum, velocidades.v[0], velocidades.w[0]);
+        //Serial.printf("%p\t%p\t%p\n", checksum, robot_message.v[0], robot_message.w[0]);
       }
 
       /* Zera o contador */
@@ -177,3 +275,5 @@ void receiveUSBdata(){
     }
   }
 }
+
+#endif

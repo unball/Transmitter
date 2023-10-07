@@ -92,6 +92,7 @@ ENV/
 *.sublime-project
 *.sublime-workspace
 
+*.json
 *.vscode
 .vscode
 vscode
