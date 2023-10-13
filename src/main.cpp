@@ -11,13 +11,11 @@ uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 /* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
 struct RobotMessage{
-  int16_t control;
   int16_t v[3];
   int16_t w[3];
 };
 
 struct snd_message{
-  uint8_t control;
   uint8_t id;
   int16_t v;
   int16_t w;
@@ -105,7 +103,7 @@ void sendWifi(){
   result = true;
 
   for(uint8_t i=0 ; i<3 ; i++){
-    snd_message msg = {.control = (uint8_t)robot_message.control, .id = i, .v = robot_message.v[i], .w = robot_message.w[i]};
+    snd_message msg = {.id = i, .v = robot_message.v[i], .w = robot_message.w[i]};
     
     /* Sends the message using ESP-NOW */
     esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(snd_message));
