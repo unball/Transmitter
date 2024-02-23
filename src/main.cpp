@@ -8,13 +8,6 @@
 int16_t kpint;
 int16_t kiint;
 int16_t kdint;
-int16_t wint;
-int16_t vint;
-double kpfloat;
-double kifloat;
-double kdfloat;
-double wfloat;
-double vfloat;
 float erro;
 char erro_buffer[50];
 char serialData[50];
