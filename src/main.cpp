@@ -1,15 +1,24 @@
 #include <SPI.h>
 #include <ESP8266WiFi.h>
 #include <espnow.h>
+#include <string.h> 
+#include <stdio.h>
+#include "config.hpp"
 
-#define PID_TUNNER true
-
-/* Definitions */
-#define MAX_POWER 10.0  //TODO: Test values
-#define WIFI_CHANNEL 12  //TODO: Test values
-
-/* Broadcast address, sends to everyone */
-uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+int16_t kpint;
+int16_t kiint;
+int16_t kdint;
+int16_t wint;
+int16_t vint;
+double kpfloat;
+double kifloat;
+double kdfloat;
+double wfloat;
+double vfloat;
+float erro;
+char erro_buffer[50];
+char serialData[50];
+bool response = false;
 
 /* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
 struct RobotMessage{
@@ -17,45 +26,20 @@ struct RobotMessage{
   int16_t vr[3];
 };
 
-#if PID_TUNNER
-struct snd_message{
-  uint8_t id;
-  int16_t kp;
-  int16_t ki;
-  int16_t kd;
-};
-
-snd_message send_commands;
-
-struct rcv_message{
-  float value;
-};
-
-rcv_message rcv_commands;
-
-/* Struct for the message to be received from USB */
-struct SerialConstants {
-  snd_message data;
-  double checksum;
-};
-
-#else
 struct snd_message{
   int16_t id;
   int16_t vl;
   int16_t vr;
 };
-#endif
 
-/* Estrutura para a mensagem a ser recebida do USB */
-struct SerialMessage {
-  RobotMessage data;
-  int16_t checksum;
-};
+snd_message send_commands;
+
+rcv_message rcv_commands;
 
 /* Declaração das funções */
 void wifiSetup();
 void sendWifi();
+void sendConfig();
 void receiveUSBdata();
 
 /* Mensagem a ser transmitida */
@@ -75,20 +59,31 @@ void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus)
     result = false;
 }
 
-#if PID_TUNNER
 // Callback function, execute when message is sent via Wi-Fi
 void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len){
   memcpy(&rcv_commands, incomingData, sizeof(rcv_commands));
-  Serial.println(rcv_commands.value);
+  //Serial.println(rcv_commands.value);
   delay(2);
+
 }
-#endif
+
+void robotResponse(bool* response, float* erro){
+  *erro = rcv_commands.value;
+  *response = rcv_commands.response;
+}
 
 /* Loop de setup */
 void setup(void) {
   Serial.begin(115200);
   while(!Serial);
   wifiSetup();
+  while (!response){
+    sendConfig();
+    robotResponse(&response, &erro);
+    Serial.println(response)
+  }
+  
+  
   pinMode(LED_BUILTIN, OUTPUT);
 }
 
@@ -96,7 +91,6 @@ void setup(void) {
 void loop(){
     // Recebe robot_message via USB
     receiveUSBdata();
-
     // Envia via rádio
 		static int32_t t = micros();
 		if(micros()-t >= 500){
@@ -112,17 +106,55 @@ void loop(){
       digitalWrite(LED_BUILTIN, LOW);
     }
 
+    dtostrf(erro, 8, 5, erro_buffer);
+    erro = rcv_commands.value; 
+    Serial.write(erro_buffer,4);    
+
 }
 
-#if PID_TUNNER
-/* Sends the message via Wi-Fi */
+void sendConfig(){
+
+  result = true;
+  for(uint8_t i=0; i<3; i++){
+    
+    #if  CONTROL_ON
+      snd_message config = {.control = 1, .id = i, .kp = 1, .ki =0,.kd = 0, .w = 0, .v = 0};
+
+    #else
+      #if TWIDDLE_ON
+      snd_message config = {.control = 2, .id = i, .kp = 1, .ki =0,.kd = 0, .w = 0, .v = 0};
+      
+      #else
+      snd_message config = {.control = 3, .id = i, .kp = 1, .ki =0,.kd = 0, .w = 0, .v = 0};
+
+      #endif
+    #endif
+   
+    esp_now_send(broadcastAddress, (uint8_t *) &config, sizeof(snd_message));
+    delay(3);
+  }
+  
+  if(result){
+    lastOK = millis();
+  }
+}
+
 void sendWifi(){
 
   result = true;
-
-  for(uint8_t i=0 ; i<3 ; i++){
-    snd_message control_constants = {.id = i, .kp = 1.0, .ki = 1.0, .kd = 1.0};
-    
+  //parametro = twidle(parametro);
+  for(uint8_t i=0; i<1; i++){
+    /*kpint = (int16_t)(kpfloat * 100);
+    kiint = (int16_t)(kifloat * 100);
+    kdint = (int16_t)(kdfloat * 100);
+    wint = (int16_t)(wfloat * 100);
+    vint = (int16_t)(vfloat * 100);*/
+    kpint = (int16_t)(0.159521 * 100);
+    kiint = (int16_t)(0.016864 * 100);
+    kdint = (int16_t)(0.016686 * 100);
+    wint = (int16_t)(25 * 100);
+    vint = (int16_t)(0 * 100);
+    snd_message control_constants = {.id = i, .kp = kpint, .ki = kiint, .kd = kdint, .w = wint, .v = vint};
     /* Sends the message using ESP-NOW */
     esp_now_send(broadcastAddress, (uint8_t *) &control_constants, sizeof(snd_message));
     delay(3);
@@ -132,6 +164,11 @@ void sendWifi(){
     lastOK = millis();
   }
 }
+
+/*void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len){
+        memcpy(&temp_msg, incomingData, sizeof(msg));
+	    lastReceived = micros();
+}*/
 
 /* Setup the Wi-Fi  */
 void wifiSetup(){
@@ -144,13 +181,13 @@ void wifiSetup(){
   if (esp_now_init() != 0) {
     return;
   }
+
   esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
   esp_now_register_send_cb(OnDataSent);
   esp_now_register_recv_cb(OnDataRecv);
   
   /* Registers the receiver of the message */
   esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_COMBO, WIFI_CHANNEL, NULL, 0);
-
 }
 
 /* Reads new robot_message from serial */
@@ -277,3 +314,43 @@ void receiveUSBdata(){
 }
 
 #endif
+
+
+
+void receiveUSBdata() {
+  static char serialBuffer[50]; // Buffer para armazenar os caracteres lidos
+  static int bufferIndex = 0; // Índice atual no buffer
+  static bool messageStart = false; // Flag para indicar se o início da mensagem foi encontrado
+
+  // Lê caracteres da porta serial até que a linha seja completa
+  while (Serial.available() > 0) {
+    char character = Serial.read();
+
+    // Se encontrar o caractere 'T', incrementa o contador de início da mensagem
+    if (character == 'T') {
+      if (!messageStart) {
+        messageStart = true;
+        bufferIndex = 0;
+      }
+    }
+
+    // Se estiver dentro da mensagem
+    if (messageStart) {
+      // Se encontrar o caractere de nova linha, a mensagem está completa
+      if (character == '\n') {
+        // Adiciona terminador de string ao buffer
+        serialBuffer[bufferIndex] = '\0';
+
+        // Tenta analisar a linha para obter os três valores de ponto flutuante
+        sscanf(serialBuffer, "%lf %lf %lf", &kdfloat, &kifloat, &kdfloat);
+
+        // Reinicia as variáveis para a próxima leitura
+        messageStart = false;
+        bufferIndex = 0;
+      } else {
+        // Adiciona o caractere ao buffer
+        serialBuffer[bufferIndex++] = character;
+      }
+    }
+  }
+}
