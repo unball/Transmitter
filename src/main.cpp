@@ -221,7 +221,7 @@ void receiveUSBdata(){
 }
 
 /* Sends the message via Wi-Fi */
-void sendWifi(){
+void sendWifiAntigo(){
 
   result = true;
 
