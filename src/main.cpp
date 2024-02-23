@@ -80,7 +80,7 @@ void setup(void) {
   while (!response){
     sendConfig();
     robotResponse(&response, &erro);
-    Serial.println(response)
+    Serial.println(response);
   }
   
   
