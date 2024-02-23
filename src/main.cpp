@@ -2,7 +2,7 @@
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 
-#define PID_TUNNER false
+#define PID_TUNNER true
 
 /* Definitions */
 #define MAX_POWER 10.0  //TODO: Test values
