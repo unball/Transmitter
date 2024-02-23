@@ -258,7 +258,7 @@ void wifiSetup(){
 }
 
 /* Reads new robot_message from serial */
-void receiveUSBdata(){
+void receiveUSBdataAntigo(){
   int initCounter = 0;
     
   while(Serial.available()){
