@@ -188,42 +188,6 @@ void wifiSetup(){
 }
 
 /* Reads new robot_message from serial */
-void receiveUSBdata(){
-  int initCounter = 0;
-    
-  while(Serial.available()){
-    /* Reads a character from the message */
-    char character = Serial.read();
-
-    /* Increments the counter if it's 'T' */
-    if(character == 'T') initCounter++;
-
-    /* If the first characters are 'T', then in fact it is the beginning of the message */
-    if(initCounter >= 3){
-      SerialConstants receive;
-
-      /* Reads the message until the finishing character then decode it */
-      Serial.readBytes((char*)(&receive), (size_t)sizeof(SerialConstants));
-
-      /* Does the checksum */
-      int16_t checksum = 0;
-      checksum = receive.data.kp + receive.data.ki + receive.data.kp;
-      
-
-      /* Verifies o checksum */
-      if(checksum == receive.checksum){
-        /* Copies to the global velocity buffer */
-        send_commands = receive.data;
-        // robot_message = receive.data;
-      }
-
-      /* Reset the counter */
-      initCounter = 0;
-    }
-  }
-}
-
-/* Reads new robot_message from serial */
 void receiveUSBdataAntigo(){
   int counter_no_control = 0;
   int counter_control = 0;
