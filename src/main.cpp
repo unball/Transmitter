@@ -137,42 +137,22 @@ void sendConfig(){
   }
 }
 
+/* Sends the message via Wi-Fi */
 void sendWifi(){
 
   result = true;
-  //parametro = twidle(parametro);
+  
   for(uint8_t i=0; i<1; i++){
-    /*kpint = (int16_t)(kpfloat * 100);
-    kiint = (int16_t)(kifloat * 100);
-    kdint = (int16_t)(kdfloat * 100);
-    wint = (int16_t)(wfloat * 100);
-    vint = (int16_t)(vfloat * 100);*/
     kpint = (int16_t)(0.159521 * 100);
     kiint = (int16_t)(0.016864 * 100);
     kdint = (int16_t)(0.016686 * 100);
     wint = (int16_t)(25 * 100);
     vint = (int16_t)(0 * 100);
+    
     snd_message control_constants = {.id = i, .kp = kpint, .ki = kiint, .kd = kdint, .w = wint, .v = vint};
+
     /* Sends the message using ESP-NOW */
     esp_now_send(broadcastAddress, (uint8_t *) &control_constants, sizeof(snd_message));
-    delay(3);
-  }
-  
-  if(result){
-    lastOK = millis();
-  }
-}
-
-/* Sends the message via Wi-Fi */
-void sendWifiAntigo(){
-
-  result = true;
-
-  for(uint8_t i=0 ; i<3 ; i++){
-    snd_message msg = {.id = i, .vl = robot_message.vl[i], .vr = robot_message.vr[i]};
-    
-    /* Sends the message using ESP-NOW */
-    esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(snd_message));
     delay(3);
   }
   
