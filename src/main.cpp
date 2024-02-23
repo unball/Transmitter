@@ -153,7 +153,7 @@ void sendWifi(){
     kiint = (int16_t)(0.016864 * 100);
     kdint = (int16_t)(0.016686 * 100);
     
-    snd_message control_constants = {.id = i, .kp = kpint, .ki = kiint, .kd = kdint, .v = robot_message.v, .w = robot_message.w};
+    snd_message control_constants = {.id = i, .kp = kpint, .ki = kiint, .kd = kdint, .v = robot_message.v[i], .w = robot_message.w[i]};
 
     /* Sends the message using ESP-NOW */
     esp_now_send(broadcastAddress, (uint8_t *) &control_constants, sizeof(snd_message));
