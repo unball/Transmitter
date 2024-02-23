@@ -5,9 +5,9 @@
 #include <stdio.h>
 #include "config.hpp"
 
-int16_t kpint;
-int16_t kiint;
-int16_t kdint;
+int16_t kp;
+int16_t ki;
+int16_t kd;
 float erro;
 char erro_buffer[50];
 char serialData[50];
@@ -150,11 +150,11 @@ void sendWifi(){
   result = true;
   
   for(uint8_t i=0; i<3; i++){
-    kpint = (int16_t)(0.159521 * 100);
-    kiint = (int16_t)(0.016864 * 100);
-    kdint = (int16_t)(0.016686 * 100);
+    kp = (int16_t)(0.159521 * 100);
+    ki = (int16_t)(0.016864 * 100);
+    kd = (int16_t)(0.016686 * 100);
     
-    snd_message control_constants = {.id = i, .kp = kpint, .ki = kiint, .kd = kdint, .v = robot_message.v[i], .w = robot_message.w[i]};
+    snd_message control_constants = {.id = i, .kp = kp, .ki = ki, .kd = kd, .v = robot_message.v[i], .w = robot_message.w[i]};
 
     /* Sends the message using ESP-NOW */
     esp_now_send(broadcastAddress, (uint8_t *) &control_constants, sizeof(snd_message));
