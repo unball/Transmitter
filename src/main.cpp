@@ -223,25 +223,6 @@ void receiveUSBdata(){
   }
 }
 
-/* Setup the Wi-Fi  */
-void wifiSetup(){
-  /* Puts the device in Wi-Fi Station mode */
-  WiFi.mode(WIFI_STA);
-
-  WiFi.setOutputPower(MAX_POWER);
-
-  /* Initialize the ESP-NOW */
-  if (esp_now_init() != 0) {
-    return;
-  }
-  esp_now_set_self_role(ESP_NOW_ROLE_CONTROLLER);
-  esp_now_register_send_cb(OnDataSent);
-
-  
-  /* Registers the receiver of the message */
-  esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_SLAVE, WIFI_CHANNEL, NULL, 0);
-}
-
 /* Reads new robot_message from serial */
 void receiveUSBdataAntigo(){
   int counter_no_control = 0;
