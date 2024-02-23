@@ -245,15 +245,19 @@ void wifiSetup(){
 /* Reads new robot_message from serial */
 void receiveUSBdataAntigo(){
   int counter_no_control = 0;
+  int counter_control = 0;
     
   while(Serial.available()){
     /* Lê um caracter da mensagem */
     char character = Serial.read();
 
-    /* Incrementa o contador se for 'B' */
+    /* Incrementa o contador para rotina sem controle */
     if(character == 'B') counter_no_control++;
 
-    /* Se os três primeiros caracteres são 'B' então de fato é o início da mensagem */
+    /* Incrementa o contador para rotina com controle */
+    if(character == 'C') counter_control++;
+
+    /* Se os três primeiros caracteres são 'B' então é o início da mensagem sem controle*/
     if(counter_no_control >= 3){
       SerialMessage receive;
       
