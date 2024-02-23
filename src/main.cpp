@@ -148,7 +148,7 @@ void sendWifi(){
 
   result = true;
   
-  for(uint8_t i=0; i<1; i++){
+  for(uint8_t i=0; i<3; i++){
     kpint = (int16_t)(0.159521 * 100);
     kiint = (int16_t)(0.016864 * 100);
     kdint = (int16_t)(0.016686 * 100);
