@@ -58,8 +58,12 @@ void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len){
   memcpy(&rcv_commands, incomingData, sizeof(rcv_commands));
   //Serial.println(rcv_commands.value);
   delay(2);
-
 }
+
+/*void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len){
+        memcpy(&temp_msg, incomingData, sizeof(msg));
+	    lastReceived = micros();
+}*/
 
 void robotResponse(bool* response, float* erro){
   *erro = rcv_commands.value;
@@ -158,11 +162,6 @@ void sendWifi(){
     lastOK = millis();
   }
 }
-
-/*void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len){
-        memcpy(&temp_msg, incomingData, sizeof(msg));
-	    lastReceived = micros();
-}*/
 
 /* Setup the Wi-Fi  */
 void wifiSetup(){
