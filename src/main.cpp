@@ -13,6 +13,14 @@ char erro_buffer[50];
 char serialData[50];
 bool response = false;
 
+enum Mode {
+  twiddle = 0,
+  control = 1,
+  no_control = 2,
+};
+
+uint8_t mode;
+
 /* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
 struct RobotMessage{
   int16_t v[3];
