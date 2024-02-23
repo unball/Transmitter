@@ -22,8 +22,8 @@ bool response = false;
 
 /* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
 struct RobotMessage{
-  int16_t vl[3];
-  int16_t vr[3];
+  int16_t v[3];
+  int16_t w[3];
 };
 
 /* Estrutura para a mensagem a ser recebida do USB */
@@ -122,7 +122,7 @@ void sendConfig(){
   for(uint8_t i=0; i<3; i++){
     
     #if  CONTROL_ON
-      snd_message config = {.control = 1, .id = i, .kp = 1, .ki =0,.kd = 0, .w = 0, .v = 0};
+      snd_message config = {.control = 1, .id = i, .kp = 1, .ki =0,.kd = 0, .v = 0, .w = 0};
 
     #else
       #if TWIDDLE_ON
@@ -152,10 +152,8 @@ void sendWifi(){
     kpint = (int16_t)(0.159521 * 100);
     kiint = (int16_t)(0.016864 * 100);
     kdint = (int16_t)(0.016686 * 100);
-    wint = (int16_t)(25 * 100);
-    vint = (int16_t)(0 * 100);
     
-    snd_message control_constants = {.id = i, .kp = kpint, .ki = kiint, .kd = kdint, .w = wint, .v = vint};
+    snd_message control_constants = {.id = i, .kp = kpint, .ki = kiint, .kd = kdint, .v = robot_message.v, .w = robot_message.w};
 
     /* Sends the message using ESP-NOW */
     esp_now_send(broadcastAddress, (uint8_t *) &control_constants, sizeof(snd_message));
@@ -212,7 +210,7 @@ void receiveUSBdataAntigo(){
       /* Faz o checksum */
       int16_t checksum = 0;
       for(int i=0 ; i<3 ; i++){
-        checksum += receive.data.vl[i] + receive.data.vr[i];
+        checksum += receive.data.v[i] + receive.data.w[i];
       }
 
       /* Verifica o checksum */
@@ -221,7 +219,7 @@ void receiveUSBdataAntigo(){
         robot_message = receive.data;
 
         /* Reporta que deu certo */
-        Serial.printf("%d\t%d\t%d\n", checksum, robot_message.vl[0], robot_message.vr[0]);
+        Serial.printf("%d\t%d\t%d\n", checksum, robot_message.v[0], robot_message.w[0]);
         
       }
       else {
@@ -248,7 +246,7 @@ void receiveUSBdataAntigo(){
       /* Faz o checksum */
       int16_t checksum = 0;
       for(int i=0 ; i<3 ; i++){
-        checksum += receive.data.vl[i] + receive.data.vr[i];
+        checksum += receive.data.v[i] + receive.data.w[i];
       }
 
       /* Verifica o checksum */
@@ -257,7 +255,7 @@ void receiveUSBdataAntigo(){
         robot_message = receive.data;
 
         /* Reporta que deu certo */
-        Serial.printf("%d\t%d\t%d\n", checksum, robot_message.vl[0], robot_message.vr[0]);
+        Serial.printf("%d\t%d\t%d\n", checksum, robot_message.v[0], robot_message.w[0]);
         
       }
       else {
