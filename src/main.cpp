@@ -150,6 +150,7 @@ void sendWifi(){
   result = true;
   
   for(uint8_t i=0; i<3; i++){
+    // TODO: Fazer com que de alguma forma, após a execução do twiddle, o código armazene as constantes kp, ki e kd pra utilizar no modo de controle.
     kp = (int16_t)(0.159521 * 100);
     ki = (int16_t)(0.016864 * 100);
     kd = (int16_t)(0.016686 * 100);
@@ -303,7 +304,7 @@ void receiveUSBdata() {
         serialBuffer[bufferIndex] = '\0';
 
         // Tenta analisar a linha para obter os três valores de ponto flutuante
-        sscanf(serialBuffer, "%lf %lf %lf", &kdfloat, &kifloat, &kdfloat);
+        // sscanf(serialBuffer, "%lf %lf %lf", &kdfloat, &kifloat, &kdfloat);
 
         // Reinicia as variáveis para a próxima leitura
         messageStart = false;
