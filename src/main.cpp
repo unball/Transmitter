@@ -218,6 +218,7 @@ void receiveUSBdataAntigo(){
       if(checksum == receive.checksum){
         /* Copia para o buffer global de robot_message */
         robot_message = receive.data;
+        mode = Mode::no_control;
 
         /* Reporta que deu certo */
         Serial.printf("%d\t%d\t%d\n", checksum, robot_message.v[0], robot_message.w[0]);
@@ -254,6 +255,7 @@ void receiveUSBdataAntigo(){
       if(checksum == receive.checksum){
         /* Copia para o buffer global de robot_message */
         robot_message = receive.data;
+        mode = Mode::control;
 
         /* Reporta que deu certo */
         Serial.printf("%d\t%d\t%d\n", checksum, robot_message.v[0], robot_message.w[0]);
