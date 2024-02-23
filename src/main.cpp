@@ -163,6 +163,24 @@ void sendWifi(){
   }
 }
 
+/* Sends the message via Wi-Fi */
+void sendWifiAntigo(){
+
+  result = true;
+
+  for(uint8_t i=0 ; i<3 ; i++){
+    snd_message msg = {.id = i, .vl = robot_message.vl[i], .vr = robot_message.vr[i]};
+    
+    /* Sends the message using ESP-NOW */
+    esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(snd_message));
+    delay(3);
+  }
+  
+  if(result){
+    lastOK = millis();
+  }
+}
+
 /* Setup the Wi-Fi  */
 void wifiSetup(){
   /* Puts the device in Wi-Fi Station mode */
@@ -216,24 +234,6 @@ void receiveUSBdata(){
       /* Reset the counter */
       initCounter = 0;
     }
-  }
-}
-
-/* Sends the message via Wi-Fi */
-void sendWifiAntigo(){
-
-  result = true;
-
-  for(uint8_t i=0 ; i<3 ; i++){
-    snd_message msg = {.id = i, .vl = robot_message.vl[i], .vr = robot_message.vr[i]};
-    
-    /* Sends the message using ESP-NOW */
-    esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(snd_message));
-    delay(3);
-  }
-  
-  if(result){
-    lastOK = millis();
   }
 }
 
