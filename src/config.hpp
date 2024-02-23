@@ -16,8 +16,8 @@ struct snd_message{
   int16_t kp;
   int16_t ki;
   int16_t kd;
-  int16_t w;
   int16_t v;
+  int16_t w;
 };
 
 
