@@ -220,8 +220,6 @@ void receiveUSBdata(){
   }
 }
 
-#else
-
 /* Sends the message via Wi-Fi */
 void sendWifi(){
 
@@ -306,10 +304,6 @@ void receiveUSBdata(){
     }
   }
 }
-
-#endif
-
-
 
 void receiveUSBdata() {
   static char serialBuffer[50]; // Buffer para armazenar os caracteres lidos
