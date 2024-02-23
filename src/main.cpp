@@ -26,6 +26,12 @@ struct RobotMessage{
   int16_t vr[3];
 };
 
+/* Estrutura para a mensagem a ser recebida do USB */
+struct SerialMessage {
+  RobotMessage data;
+  int16_t checksum;
+};
+
 snd_message send_commands;
 
 rcv_message rcv_commands;
