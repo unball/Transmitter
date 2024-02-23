@@ -26,12 +26,6 @@ struct RobotMessage{
   int16_t vr[3];
 };
 
-struct snd_message{
-  int16_t id;
-  int16_t vl;
-  int16_t vr;
-};
-
 snd_message send_commands;
 
 rcv_message rcv_commands;
