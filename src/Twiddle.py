@@ -4,6 +4,7 @@ from random import randint
 
 class Twiddle():
     def __init__(self):
+        self.id = -1
         self.serial = None
         self.failCount = 0
 
@@ -21,7 +22,7 @@ class Twiddle():
         message = bytes("TTT", encoding='ascii')
 
         # Robot's ID
-        message += (0).to_bytes(1,byteorder='little', signed=True)
+        message += (self.id).to_bytes(1,byteorder='little', signed=True)
 
         # Control parameters
         message += (int(kp)).to_bytes(2,byteorder='little', signed=True)
@@ -95,6 +96,13 @@ if __name__ == "__main__":
     twiddle = Twiddle()
     
     while True:
+        id = input("(0) Robot 0\n"
+                    "(1) Robot 1\n"
+                    "(2) Robot 2\n").strip()
+        
+        twiddle.id = int(id)
+        print('Twiddle for robot ', twiddle.id)
+        
         command = input("(1) run one\n"
                         "(2) run n\n"
                         "(3) close\n").strip()
