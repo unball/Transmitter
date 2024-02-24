@@ -277,7 +277,7 @@ void receiveUSBdataAntigo(){
       /* Lê a mensagem até o caracter de terminação e a decodifica */
       Serial.readBytes((char*)(&receive_constants), (size_t)sizeof(SerialConstants));
 
-      mode = Mode::control;
+      mode = Mode::twiddle;
 
       /* Zera o contador */
       counter_twiddle = 0;
