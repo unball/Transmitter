@@ -2,8 +2,6 @@ import serial
 from time import sleep
 from random import randint
 
-esp32 = serial.Serial('/dev/ttyUSB0', 115200)
-
 class Twiddle():
     def __init__(self):
         self.serial = None
@@ -51,9 +49,9 @@ class Twiddle():
 
     def run_pid_test(self, kp, ki, kd):
         print(f"<{0},{0},{0},{0},{3},{kp},{ki},{kd},{9},{0},{0},{0}>")
-        esp32.write(f"<{0},{0},{0},{0},{3},{100*kp},{100*ki},{100*kd},{9},{0},{0},{0}>".encode())
+        self.serial.write(f"<{0},{0},{0},{0},{3},{100*kp},{100*ki},{100*kd},{9},{0},{0},{0}>".encode())
         sleep(8)
-        error = esp32.readline()
+        error = self.serial.readline()
         error = error.decode()
         print(error)
         return abs(float(error))
