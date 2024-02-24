@@ -5,10 +5,13 @@ from random import randint
 esp32 = serial.Serial('/dev/ttyUSB0', 115200)
 
 class Twiddle():
-  """Implementa a comunicação usando simplesmente a interface serial"""
-  def __init__(self):
-    self.serial = None
+    def __init__(self):
+        self.serial = None
 
+    def closeSerial(self):
+        if self.serial is not None: self.serial.close()
+
+    
 
 def twiddle(k, dk, ksi=.3, target=None):
     if not target:
