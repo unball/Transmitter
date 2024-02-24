@@ -87,7 +87,7 @@ class Twiddle():
         self.send(100*kp, 100*ki, 100*kd)
         sleep(8)
         error = self.receive()
-        print(error)
+        print('erro: ', error)
         return abs(float(error))
 
 params = [[-1.858962031647976, -0.16864975434220458, 0.16686768215869935], [0.538265, 0.049981750000000005, 0.049981750000000005]]
