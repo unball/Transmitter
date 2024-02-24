@@ -27,8 +27,10 @@ class Twiddle():
         message += (ki).to_bytes(2,byteorder='little', signed=True)
         message += (kd).to_bytes(2,byteorder='little', signed=True)
 
-
-
+        try:
+            self.serial.write(message)
+        except Exception as e:
+            print("Falha ao enviar: " + str(e))
 
     def closeSerial(self):
         if self.serial is not None: self.serial.close()      
