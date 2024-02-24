@@ -13,7 +13,14 @@ char erro_buffer[50];
 char serialData[50];
 bool response = false;
 
-struct ControlConstants control_constants;
+ControlConstants control_constants;
+
+struct SerialConstants serial_constants = {
+  .id = 1,
+  .kp = (int16_t)(0.159521 * 100),
+  .ki = (int16_t)(0.016864 * 100),
+  .kd = (int16_t)(0.016686 * 100)
+};
 
 uint8_t mode;
 
