@@ -5,9 +5,9 @@
 #include <stdio.h>
 #include "config.hpp"
 
-int16_t kp;
-int16_t ki;
-int16_t kd;
+// int16_t kp;
+// int16_t ki;
+// int16_t kd;
 float erro;
 char erro_buffer[50];
 char serialData[50];
@@ -151,11 +151,11 @@ void sendWifi(){
   
   for(uint8_t i=0; i<3; i++){
     // TODO: Fazer com que de alguma forma, após a execução do twiddle, o código armazene as constantes kp, ki e kd pra utilizar no modo de controle.
-    kp = (int16_t)(0.159521 * 100);
-    ki = (int16_t)(0.016864 * 100);
-    kd = (int16_t)(0.016686 * 100);
+    // kp = (int16_t)(0.159521 * 100);
+    // ki = (int16_t)(0.016864 * 100);
+    // kd = (int16_t)(0.016686 * 100);
     
-    snd_message control_constants = {.id = i, .kp = kp, .ki = ki, .kd = kd, .v = robot_message.v[i], .w = robot_message.w[i]};
+    snd_message control_constants = {.id = i, .kp = 0, .ki = 0, .kd = 0, .v = robot_message.v[i], .w = robot_message.w[i]};
 
     /* Sends the message using ESP-NOW */
     esp_now_send(broadcastAddress, (uint8_t *) &control_constants, sizeof(snd_message));
