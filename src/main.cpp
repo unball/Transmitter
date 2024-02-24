@@ -141,10 +141,8 @@ void sendWifi(){
   result = true;
   
   if (mode == Mode::twiddle){
-    SerialConstants msg;
-
     /* Sends the message using ESP-NOW */
-    esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(SerialConstants));
+    esp_now_send(broadcastAddress, (uint8_t *) &serial_constants, sizeof(SerialConstants));
     delay(3);
   }
   else{
