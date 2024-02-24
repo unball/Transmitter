@@ -58,26 +58,11 @@ void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len){
   delay(2);
 }
 
-/*void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len){
-        memcpy(&temp_msg, incomingData, sizeof(msg));
-	    lastReceived = micros();
-}*/
-
-// void robotResponse(bool* response, float* erro){
-//   *erro = rcv_commands.value;
-//   *response = rcv_commands.response;
-// }
-
 /* Loop de setup */
 void setup(void) {
   Serial.begin(115200);
   while(!Serial);
   wifiSetup();
-  // while (!response){
-  //   sendConfig();
-  //   robotResponse(&response, &erro);
-  //   Serial.println(response);
-  // }
   
   
   pinMode(LED_BUILTIN, OUTPUT);
@@ -102,11 +87,7 @@ void loop(){
     else{
       digitalWrite(LED_BUILTIN, LOW);
     }
-
-    // dtostrf(erro, 8, 5, erro_buffer);
-    // erro = rcv_commands.value; 
-    // Serial.write(erro_buffer,4);    
-
+    
 }
 
 void sendConfig(){
