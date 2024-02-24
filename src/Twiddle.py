@@ -61,6 +61,8 @@ class Twiddle():
 params = [[-1.858962031647976, -0.16864975434220458, 0.16686768215869935], [0.538265, 0.049981750000000005, 0.049981750000000005]]
 
 if __name__ == "__main__":
+    twiddle = Twiddle()
+    
     while True:
         command = input("(1) run one\n"
                         "(2) run n\n"
@@ -74,7 +76,7 @@ if __name__ == "__main__":
             n = int(input("\tn: ").strip())
 
         for _ in range(n):
-            params = twiddle(*params)
+            params = twiddle.twiddle(*params)
             print("-------------------------------------------------------------------------------",
                 "best (kp, ki, kd):", params[0],
                 "\nbest error:", params[3],
