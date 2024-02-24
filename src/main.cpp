@@ -182,7 +182,7 @@ void wifiSetup(){
 }
 
 /* Reads new robot_message from serial */
-void receiveUSBdataAntigo(){
+void receiveUSBdata(){
   int counter_no_control = 0;
   int counter_control = 0;
   int counter_twiddle = 0;
@@ -290,40 +290,4 @@ void receiveUSBdataAntigo(){
   }
 }
 
-void receiveUSBdata() {
-  static char serialBuffer[50]; // Buffer para armazenar os caracteres lidos
-  static int bufferIndex = 0; // Índice atual no buffer
-  static bool messageStart = false; // Flag para indicar se o início da mensagem foi encontrado
 
-  // Lê caracteres da porta serial até que a linha seja completa
-  while (Serial.available() > 0) {
-    char character = Serial.read();
-
-    // Se encontrar o caractere 'T', incrementa o contador de início da mensagem
-    if (character == 'T') {
-      if (!messageStart) {
-        messageStart = true;
-        bufferIndex = 0;
-      }
-    }
-
-    // Se estiver dentro da mensagem
-    if (messageStart) {
-      // Se encontrar o caractere de nova linha, a mensagem está completa
-      if (character == '\n') {
-        // Adiciona terminador de string ao buffer
-        serialBuffer[bufferIndex] = '\0';
-
-        // Tenta analisar a linha para obter os três valores de ponto flutuante
-        // sscanf(serialBuffer, "%lf %lf %lf", &kdfloat, &kifloat, &kdfloat);
-
-        // Reinicia as variáveis para a próxima leitura
-        messageStart = false;
-        bufferIndex = 0;
-      } else {
-        // Adiciona o caractere ao buffer
-        serialBuffer[bufferIndex++] = character;
-      }
-    }
-  }
-}
