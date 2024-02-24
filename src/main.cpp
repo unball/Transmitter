@@ -65,7 +65,6 @@ void setup(void) {
   while(!Serial);
   wifiSetup();
   
-  
   pinMode(LED_BUILTIN, OUTPUT);
 }
 
@@ -172,7 +171,7 @@ void receiveUSBdata(){
   int counter_no_control = 0;
   int counter_control = 0;
   int counter_twiddle = 0;
-    
+
   while(Serial.available()){
     /* Lê um caracter da mensagem */
     char character = Serial.read();
@@ -182,6 +181,9 @@ void receiveUSBdata(){
 
     /* Incrementa o contador para rotina com controle */
     if(character == 'C') counter_control++;
+
+    /* Incrementa o contador para rotina do Twiddle */
+    if(character == 'T') counter_twiddle++;
 
     /* Se os três primeiros caracteres são 'B' então é o início da mensagem sem controle */
     if(counter_no_control >= 3){
@@ -257,7 +259,6 @@ void receiveUSBdata(){
       
     }
    
-
     /* Se os três primeiros caracteres são 'T' então é o início da mensagem para a rotina do Twiddle*/
     if(counter_twiddle >= 3){
       SerialConstants receive_constants;
@@ -274,6 +275,7 @@ void receiveUSBdata(){
       
     }
   }
+
 }
 
 
