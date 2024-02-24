@@ -45,6 +45,8 @@ class Twiddle():
                     k[i] += dk[i]
                     dk[i] *= 1 - ksi
 
+        self.closeSerial()
+
         return k, dk, ksi, target
 
     def run_pid_test(self, kp, ki, kd):
@@ -78,5 +80,3 @@ if __name__ == "__main__":
                 "\nbest error:", params[3],
                 "\ncurrent (dks): ", params[1])
 
-
-    esp32.close()
