@@ -40,8 +40,7 @@ struct snd_message{
 
 struct rcv_message{
   uint8_t id;  
-  bool response;
-  int16_t value;
+  float error;
 };
 
 struct SerialConstants {
