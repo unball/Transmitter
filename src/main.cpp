@@ -13,6 +13,8 @@ char erro_buffer[50];
 char serialData[50];
 bool response = false;
 
+struct ControlConstants control_constants;
+
 enum Mode {
   twiddle = 0,
   control = 1,
