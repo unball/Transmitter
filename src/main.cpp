@@ -157,7 +157,7 @@ void sendWifi(){
     // ki = (int16_t)(0.016864 * 100);
     // kd = (int16_t)(0.016686 * 100);
     
-    snd_message send_commands = {.id = i, .kp = 0, .ki = 0, .kd = 0, .v = robot_message.v[i], .w = robot_message.w[i]};
+    snd_message send_commands = {.id = i, .kp = control_constants.kp[i], .ki = control_constants.ki[i], .kd = control_constants.kd[i], .v = robot_message.v[i], .w = robot_message.w[i]};
 
     /* Sends the message using ESP-NOW */
     esp_now_send(broadcastAddress, (uint8_t *) &send_commands, sizeof(snd_message));
