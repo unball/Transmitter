@@ -44,7 +44,7 @@ struct rcv_message{
 };
 
 struct SerialConstants {
-  uint8_t id;
+  int16_t id;
   int16_t kp;
   int16_t ki;
   int16_t kd;
