@@ -23,9 +23,9 @@ class Twiddle():
         message += (0).to_bytes(1,byteorder='little', signed=True)
 
         # Control parameters
-        message += (kp).to_bytes(2,byteorder='little', signed=True)
-        message += (ki).to_bytes(2,byteorder='little', signed=True)
-        message += (kd).to_bytes(2,byteorder='little', signed=True)
+        message += (int(kp)).to_bytes(2,byteorder='little', signed=True)
+        message += (int(ki)).to_bytes(2,byteorder='little', signed=True)
+        message += (int(kd)).to_bytes(2,byteorder='little', signed=True)
 
         try:
             self.serial.write(message)
