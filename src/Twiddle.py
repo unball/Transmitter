@@ -1,6 +1,7 @@
 import serial
 from time import sleep
 from random import randint
+import os
 
 class Twiddle():
     def __init__(self):
@@ -89,6 +90,18 @@ class Twiddle():
         error = self.receive()
         print('erro: ', error)
         return abs(float(error))
+    
+    def save_constants(params):
+        try:
+            os.remove('Constantes')
+        except FileNotFoundError:
+            pass
+
+        with open('Constantes', 'w') as file:
+            file.write(f"best (kp, ki kd): {params[0]}\n")
+            file.write(f"best error {params[3]}\n")
+            file.write(f"current (dks):  {params[1]}\n")
+
 
 params = [[-1.858962031647976, -0.16864975434220458, 0.16686768215869935], [0.538265, 0.049981750000000005, 0.049981750000000005]]
 
@@ -120,4 +133,5 @@ if __name__ == "__main__":
                 "best (kp, ki, kd):", params[0],
                 "\nbest error:", params[3],
                 "\ncurrent (dks): ", params[1])
+            twiddle.save_constants(params)
 
