@@ -17,18 +17,6 @@ struct ControlConstants control_constants;
 
 uint8_t mode;
 
-/* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
-struct RobotMessage{
-  int16_t v[3];
-  int16_t w[3];
-};
-
-/* Estrutura para a mensagem a ser recebida do USB */
-struct SerialMessage {
-  RobotMessage data;
-  int16_t checksum;
-};
-
 snd_message send_commands;
 
 rcv_message rcv_commands;
