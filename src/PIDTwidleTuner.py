@@ -71,14 +71,14 @@ def twidle(parametro):
     salva_constantes
     return parametro
 
+if __name__ == "__main__":
+    # Recebe um buffer de dados
+    while len(data) <= BUFFER_SIZE-1:
+        values = serial.read()
 
-# Recebe um buffer de dados
-while len(data) <= BUFFER_SIZE-1:
-    values = serial.read()
-
-    # Concatena ao conjunto de dados lidos
-    if values is not None:
-        data.append(values)
-parametros = Parametros()
-parametros = twidle(parametros)
+        # Concatena ao conjunto de dados lidos
+        if values is not None:
+            data.append(values)
+    parametros = Parametros()
+    parametros = twidle(parametros)
 
