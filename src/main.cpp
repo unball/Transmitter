@@ -54,7 +54,8 @@ void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus)
 // Callback function, execute when message is sent via Wi-Fi
 void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len){
   memcpy(&rcv_commands, incomingData, sizeof(rcv_commands));
-  //Serial.println(rcv_commands.value);
+  // TODO: O que fazer com id? verificar se está no robô certo?
+  Serial.println(rcv_commands.error);
   delay(2);
 }
 
@@ -87,7 +88,7 @@ void loop(){
     else{
       digitalWrite(LED_BUILTIN, LOW);
     }
-    
+
 }
 
 void sendConfig(){
