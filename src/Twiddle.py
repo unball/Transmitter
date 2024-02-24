@@ -6,7 +6,7 @@ class Twiddle():
     def __init__(self):
         self.serial = None
 
-    def send(self):
+    def send(self, kp, ki, kd):
         try:
             if self.serial is None:
                 self.serial = serial.Serial('/dev/ttyUSB0', 115200)
@@ -15,6 +15,11 @@ class Twiddle():
             print(e)
             print("Falha ao abrir serial")
             return
+        
+        # Início da mensagem
+        message = bytes("TTT", encoding='ascii')
+
+
 
     def closeSerial(self):
         if self.serial is not None: self.serial.close()      
