@@ -8,6 +8,16 @@ class Twiddle():
     def __init__(self):
         self.serial = None
 
+    def send(self):
+        try:
+            if self.serial is None:
+                self.serial = serial.Serial('/dev/ttyUSB0', 115200)
+                self.serial.timeout = 0.100
+        except Exception as e:
+            print(e)
+            print("Falha ao abrir serial")
+            return
+
     def closeSerial(self):
         if self.serial is not None: self.serial.close()      
 
@@ -37,7 +47,7 @@ class Twiddle():
 
         return k, dk, ksi, target
 
-    def run_pid_test(self, p, ki, kd):
+    def run_pid_test(self, kp, ki, kd):
         print(f"<{0},{0},{0},{0},{3},{kp},{ki},{kd},{9},{0},{0},{0}>")
         esp32.write(f"<{0},{0},{0},{0},{3},{100*kp},{100*ki},{100*kd},{9},{0},{0},{0}>".encode())
         sleep(8)
