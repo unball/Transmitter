@@ -39,6 +39,16 @@ class Twiddle():
                 self.serial = None
                 self.failCount = 0
 
+    def receive(self):
+        response = self.serial.readline().decode()
+        try:
+            if len(response) != 1: print('Mensagem de erro de tamanho errado')
+        except:
+            print('Sem resposta de erro')
+        
+        return response
+        
+
     def closeSerial(self):
         if self.serial is not None: self.serial.close()      
 
