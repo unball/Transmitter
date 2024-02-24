@@ -19,6 +19,15 @@ class Twiddle():
         # Início da mensagem
         message = bytes("TTT", encoding='ascii')
 
+        # Robot's ID
+        message += (0).to_bytes(1,byteorder='little', signed=True)
+
+        # Control parameters
+        message += (kp).to_bytes(2,byteorder='little', signed=True)
+        message += (ki).to_bytes(2,byteorder='little', signed=True)
+        message += (kd).to_bytes(2,byteorder='little', signed=True)
+
+
 
 
     def closeSerial(self):
