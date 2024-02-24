@@ -42,12 +42,13 @@ class Twiddle():
     def receive(self):
         response = self.serial.readline().decode()
         try:
-            if len(response) != 1: print('Mensagem de erro de tamanho errado')
+            if len(response) != 1:
+                print('Mensagem de erro de tamanho errado')
+                return 0
+            else: return response
         except:
             print('Sem resposta de erro')
-        
-        return response
-        
+            return 0
 
     def closeSerial(self):
         if self.serial is not None: self.serial.close()      
@@ -84,8 +85,7 @@ class Twiddle():
         print('kp: ', kp, '\nki: ', ki, '\nkd: ', kd)
         self.send(100*kp, 100*ki, 100*kd)
         sleep(8)
-        error = self.serial.readline()
-        error = error.decode()
+        error = self.receive()
         print(error)
         return abs(float(error))
 
