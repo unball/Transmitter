@@ -5,14 +5,6 @@
 #include <stdio.h>
 #include "config.hpp"
 
-// int16_t kp;
-// int16_t ki;
-// int16_t kd;
-float erro;
-char erro_buffer[50];
-char serialData[50];
-bool response = false;
-
 ControlConstants control_constants;
 
 struct SerialConstants serial_constants = {
@@ -88,33 +80,6 @@ void loop(){
       digitalWrite(LED_BUILTIN, LOW);
     }
 
-}
-
-void sendConfig(){
-
-  result = true;
-  for(uint8_t i=0; i<3; i++){
-    
-    #if  CONTROL_ON
-      snd_message config = {.control = 1, .id = i, .kp = 1, .ki =0,.kd = 0, .v = 0, .w = 0};
-
-    #else
-      #if TWIDDLE_ON
-      snd_message config = {.control = 2, .id = i, .kp = 1, .ki =0,.kd = 0, .w = 0, .v = 0};
-      
-      #else
-      snd_message config = {.control = 3, .id = i, .kp = 1, .ki =0,.kd = 0, .w = 0, .v = 0};
-
-      #endif
-    #endif
-   
-    esp_now_send(broadcastAddress, (uint8_t *) &config, sizeof(snd_message));
-    delay(3);
-  }
-  
-  if(result){
-    lastOK = millis();
-  }
 }
 
 /* Sends the message via Wi-Fi */
