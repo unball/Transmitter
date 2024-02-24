@@ -65,7 +65,7 @@ class Twiddle():
 
     def run_pid_test(self, kp, ki, kd):
         print(f"<{0},{0},{0},{0},{3},{kp},{ki},{kd},{9},{0},{0},{0}>")
-        self.serial.write(f"<{0},{0},{0},{0},{3},{100*kp},{100*ki},{100*kd},{9},{0},{0},{0}>".encode())
+        self.send(100*kp, 100*ki, 100*kd)
         sleep(8)
         error = self.serial.readline()
         error = error.decode()
