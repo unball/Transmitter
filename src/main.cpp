@@ -15,12 +15,6 @@ bool response = false;
 
 struct ControlConstants control_constants;
 
-enum Mode {
-  twiddle = 0,
-  control = 1,
-  no_control = 2,
-};
-
 uint8_t mode;
 
 /* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */

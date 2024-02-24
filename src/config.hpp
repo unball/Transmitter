@@ -6,12 +6,16 @@
 #define TWIDDLE_ON false
 #define CONTROL_ON true
 
-
+enum Mode {
+  twiddle = 0,
+  control = 1,
+  no_control = 2,
+};
 
 /* Broadcast address, sends to everyone */
 uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 struct snd_message{
-  uint8_t control;  
+  uint8_t control;
   uint8_t id;
   int16_t kp;
   int16_t ki;
