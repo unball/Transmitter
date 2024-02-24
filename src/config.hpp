@@ -32,9 +32,10 @@ struct rcv_message{
 };
 
 struct SerialConstants {
-  int16_t kp;
-  int16_t ki;
-  int16_t kd;
+  uint8_t id;
+  int16_t kp[3];
+  int16_t ki[3];
+  int16_t kd[3];
 };
 
 /* Control constants for robot 0, 1 and 2, update values after running Twiddle algorithm */
