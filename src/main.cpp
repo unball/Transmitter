@@ -152,11 +152,11 @@ void sendWifi(){
   result = true;
   
   for(uint8_t i=0; i<3; i++){
-        
-    snd_message send_commands = {.id = i, .kp = control_constants.kp[i], .ki = control_constants.ki[i], .kd = control_constants.kd[i], .v = robot_message.v[i], .w = robot_message.w[i]};
+
+    snd_message msg = {.id = i, .kp = control_constants.kp[i], .ki = control_constants.ki[i], .kd = control_constants.kd[i], .v = robot_message.v[i], .w = robot_message.w[i]};
 
     /* Sends the message using ESP-NOW */
-    esp_now_send(broadcastAddress, (uint8_t *) &send_commands, sizeof(snd_message));
+    esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(snd_message));
     delay(3);
   }
   
