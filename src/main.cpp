@@ -283,6 +283,8 @@ void receiveUSBdataAntigo(){
 
       mode = Mode::twiddle;
 
+      serial_constants = receive_constants;
+
       /* Zera o contador */
       counter_twiddle = 0;
       
