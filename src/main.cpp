@@ -145,13 +145,22 @@ void sendWifi(){
 
   result = true;
   
-  for(uint8_t i=0; i<3; i++){
-
-    snd_message msg = {.control = mode, .id = i, .kp = control_constants.kp[i], .ki = control_constants.ki[i], .kd = control_constants.kd[i], .v = robot_message.v[i], .w = robot_message.w[i]};
+  if (mode == Mode::twiddle){
+    SerialConstants msg;
 
     /* Sends the message using ESP-NOW */
-    esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(snd_message));
+    esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(SerialConstants));
     delay(3);
+  }
+  else{
+    for(uint8_t i=0; i<3; i++){
+
+      snd_message msg = {.control = mode, .id = i, .kp = control_constants.kp[i], .ki = control_constants.ki[i], .kd = control_constants.kd[i], .v = robot_message.v[i], .w = robot_message.w[i]};
+
+      /* Sends the message using ESP-NOW */
+      esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(snd_message));
+      delay(3);
+    }
   }
   
   if(result){
