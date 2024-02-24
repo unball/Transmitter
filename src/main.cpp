@@ -277,30 +277,7 @@ void receiveUSBdataAntigo(){
       /* Lê a mensagem até o caracter de terminação e a decodifica */
       Serial.readBytes((char*)(&receive_constants), (size_t)sizeof(SerialConstants));
 
-      /* Faz o checksum */
-      int16_t checksum = 0;
-      for(int i=0 ; i<3 ; i++){
-        checksum += receive.data.v[i] + receive.data.w[i];
-      }
-
-      /* Verifica o checksum */
-      if(checksum == receive.checksum){
-        /* Copia para o buffer global de robot_message */
-        robot_message = receive.data;
-        mode = Mode::control;
-
-        /* Reporta que deu certo */
-        Serial.printf("%d\t%d\t%d\n", checksum, robot_message.v[0], robot_message.w[0]);
-        
-      }
-      else {
-        /* Devolve o checksum calculado se deu errado */
-        for(uint16_t i=0 ; i<sizeof(SerialMessage) ; i++){
-          Serial.printf("%p ", ((char*)&receive)[i]);
-        }
-        Serial.println("");
-        //Serial.printf("%p\t%p\t%p\n", checksum, robot_message.v[0], robot_message.w[0]);
-      }
+      mode = Mode::control;
 
       /* Zera o contador */
       counter_twiddle = 0;
