@@ -73,11 +73,11 @@ void setup(void) {
   Serial.begin(115200);
   while(!Serial);
   wifiSetup();
-  while (!response){
-    sendConfig();
-    robotResponse(&response, &erro);
-    Serial.println(response);
-  }
+  // while (!response){
+  //   sendConfig();
+  //   robotResponse(&response, &erro);
+  //   Serial.println(response);
+  // }
   
   
   pinMode(LED_BUILTIN, OUTPUT);
