@@ -23,7 +23,7 @@ class Twiddle():
         message = bytes("TTT", encoding='ascii')
 
         # Robot's ID
-        message += (self.id).to_bytes(1,byteorder='little', signed=True)
+        message += (self.id).to_bytes(2,byteorder='little', signed=True)
 
         # Control parameters
         message += (int(kp)).to_bytes(2,byteorder='little', signed=True)
