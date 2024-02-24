@@ -64,7 +64,7 @@ class Twiddle():
         return k, dk, ksi, target
 
     def run_pid_test(self, kp, ki, kd):
-        print(f"<{0},{0},{0},{0},{3},{kp},{ki},{kd},{9},{0},{0},{0}>")
+        print('kp: ', kp, '\nki: ', ki, '\nkd: ', kd)
         self.send(100*kp, 100*ki, 100*kd)
         sleep(8)
         error = self.serial.readline()
