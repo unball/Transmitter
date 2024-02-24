@@ -272,10 +272,10 @@ void receiveUSBdataAntigo(){
 
     /* Se os três primeiros caracteres são 'T' então é o início da mensagem para a rotina do Twiddle*/
     if(counter_twiddle >= 3){
-      SerialMessage receive;
+      SerialConstants receive_constants;
       
       /* Lê a mensagem até o caracter de terminação e a decodifica */
-      Serial.readBytes((char*)(&receive), (size_t)sizeof(SerialMessage));
+      Serial.readBytes((char*)(&receive_constants), (size_t)sizeof(SerialConstants));
 
       /* Faz o checksum */
       int16_t checksum = 0;
