@@ -152,11 +152,7 @@ void sendWifi(){
   result = true;
   
   for(uint8_t i=0; i<3; i++){
-    // TODO: Fazer com que de alguma forma, após a execução do twiddle, o código armazene as constantes kp, ki e kd pra utilizar no modo de controle.
-    // kp = (int16_t)(0.159521 * 100);
-    // ki = (int16_t)(0.016864 * 100);
-    // kd = (int16_t)(0.016686 * 100);
-    
+        
     snd_message send_commands = {.id = i, .kp = control_constants.kp[i], .ki = control_constants.ki[i], .kd = control_constants.kd[i], .v = robot_message.v[i], .w = robot_message.w[i]};
 
     /* Sends the message using ESP-NOW */
