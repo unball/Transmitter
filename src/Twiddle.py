@@ -5,6 +5,7 @@ from random import randint
 class Twiddle():
     def __init__(self):
         self.serial = None
+        self.failCount = 0
 
     def send(self, kp, ki, kd):
         try:
@@ -30,7 +31,13 @@ class Twiddle():
         try:
             self.serial.write(message)
         except Exception as e:
-            print("Falha ao enviar: " + str(e))
+            self.failCount += 1
+            print("Falha ao enviar: " + str(self.failCount) + ", " + str(e))
+
+            if self.failCount >= 30:
+                self.serial.close()
+                self.serial = None
+                self.failCount = 0
 
     def closeSerial(self):
         if self.serial is not None: self.serial.close()      
