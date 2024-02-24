@@ -63,10 +63,10 @@ void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len){
 	    lastReceived = micros();
 }*/
 
-void robotResponse(bool* response, float* erro){
-  *erro = rcv_commands.value;
-  *response = rcv_commands.response;
-}
+// void robotResponse(bool* response, float* erro){
+//   *erro = rcv_commands.value;
+//   *response = rcv_commands.response;
+// }
 
 /* Loop de setup */
 void setup(void) {
@@ -87,6 +87,7 @@ void setup(void) {
 void loop(){
     // Recebe robot_message via USB
     receiveUSBdata();
+
     // Envia via rádio
 		static int32_t t = micros();
 		if(micros()-t >= 500){
@@ -102,9 +103,9 @@ void loop(){
       digitalWrite(LED_BUILTIN, LOW);
     }
 
-    dtostrf(erro, 8, 5, erro_buffer);
-    erro = rcv_commands.value; 
-    Serial.write(erro_buffer,4);    
+    // dtostrf(erro, 8, 5, erro_buffer);
+    // erro = rcv_commands.value; 
+    // Serial.write(erro_buffer,4);    
 
 }
 
