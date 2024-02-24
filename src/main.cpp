@@ -265,7 +265,7 @@ void receiveUSBdataAntigo(){
       }
 
       /* Zera o contador */
-      counter_no_control = 0;
+      counter_control = 0;
       
     }
    
