@@ -31,3 +31,10 @@ struct SerialConstants {
   snd_message data;
   double checksum;
 };
+
+/* Control constants for robot 0, 1 and 2, update values after running Twiddle algorithm */
+struct ControlConstants {
+  int16_t kp[3] = {(int16_t)(0.159521 * 100), (int16_t)(0.159521 * 100), (int16_t)(0.159521 * 100)};
+  int16_t ki[3] = {(int16_t)(0.159521 * 100), (int16_t)(0.159521 * 100), (int16_t)(0.159521 * 100)};
+  int16_t kd[3] = {(int16_t)(0.159521 * 100), (int16_t)(0.159521 * 100), (int16_t)(0.159521 * 100)};
+};
