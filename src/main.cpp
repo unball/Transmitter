@@ -89,7 +89,7 @@ void sendWifi(){
   
   if (mode == Mode::twiddle){
     /* Sends the message using ESP-NOW */
-    snd_message msg = {.control = mode, .id = serial_constants.id, .kp = serial_constants.kp, .ki = serial_constants.ki, .kd = serial_constants.kd, .v = 0, .w = 0};
+    snd_message msg = {.control = mode, .id = (uint8_t)serial_constants.id, .kp = serial_constants.kp, .ki = serial_constants.ki, .kd = serial_constants.kd, .v = 0, .w = 0};
 
     /* Sends the message using ESP-NOW */
     esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(snd_message));
