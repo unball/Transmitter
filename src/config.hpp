@@ -7,9 +7,9 @@
 #define CONTROL_ON true
 
 enum Mode {
-  twiddle = 0,
+  no_control = 0,
   control = 1,
-  no_control = 2,
+  twiddle = 2,
 };
 
 
