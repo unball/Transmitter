@@ -158,19 +158,21 @@ void receiveUSBdata(){
       Serial.readBytes((char*)(&receive), (size_t)sizeof(SerialMessage));
 
       /* Faz o checksum */
-      int16_t checksum = 0;
+      int32_t checksum = 0;
       for(int i=0 ; i<3 ; i++){
         checksum += receive.data.v[i] + receive.data.w[i];
       }
 
+      int16_t limited_checksum = checksum >= 0 ? (int16_t)(abs(checksum) % 32767) : -(int16_t)(abs(checksum) % 32767);
+
       /* Verifica o checksum */
-      if(checksum == receive.checksum){
+      if(limited_checksum == receive.checksum){
         /* Copia para o buffer global de robot_message */
         robot_message = receive.data;
         mode = Mode::no_control;
 
         /* Reporta que deu certo */
-        Serial.printf("%d\t%d\t%d\n", checksum, robot_message.v[0], robot_message.w[0]);
+        Serial.printf("%d\t%d\t%d\n", limited_checksum, robot_message.v[0], robot_message.w[0]);
         
       }
       else {
@@ -195,19 +197,20 @@ void receiveUSBdata(){
       Serial.readBytes((char*)(&receive), (size_t)sizeof(SerialMessage));
 
       /* Faz o checksum */
-      int16_t checksum = 0;
+      int32_t checksum = 0;
       for(int i=0 ; i<3 ; i++){
         checksum += receive.data.v[i] + receive.data.w[i];
       }
+      int16_t limited_checksum = checksum >= 0 ? (int16_t)(abs(checksum) % 32767) : -(int16_t)(abs(checksum) % 32767);
 
       /* Verifica o checksum */
-      if(checksum == receive.checksum){
+      if(limited_checksum == receive.checksum){
         /* Copia para o buffer global de robot_message */
         robot_message = receive.data;
         mode = Mode::control;
 
         /* Reporta que deu certo */
-        Serial.printf("%d\t%d\t%d\n", checksum, robot_message.v[0], robot_message.w[0]);
+        Serial.printf("%d\t%d\t%d\n", limited_checksum, robot_message.v[0], robot_message.w[0]);
         
       }
       else {
