@@ -47,7 +47,7 @@ void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus)
 void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len){
   memcpy(&rcv_commands, incomingData, sizeof(rcv_commands));
   // TODO: O que fazer com id? verificar se está no robô certo?
-  Serial.println(rcv_commands.error);
+  Serial.println(rcv_commands.error/100);
   delay(2);
 }
 
