@@ -44,6 +44,7 @@ struct snd_message{
   int16_t id;
   int16_t vl;
   int16_t vr;
+  int16_t checksum;
 };
 #endif
 
@@ -197,7 +198,8 @@ void sendWifi(){
   result = true;
 
   for(uint8_t i=0 ; i<3 ; i++){
-    snd_message msg = {.id = i, .vl = robot_message.vl[i], .vr = robot_message.vr[i]};
+    
+    snd_message msg = {.id = i, .vl = robot_message.vl[i], .vr = robot_message.vr[i], .checksum = robot_message.vr[i] + robot_message.vl[i]};
     
     /* Sends the message using ESP-NOW */
     esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(snd_message));
