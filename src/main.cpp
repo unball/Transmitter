@@ -199,7 +199,10 @@ void sendWifi(){
 
   for(uint8_t i=0 ; i<3 ; i++){
     
-    snd_message msg = {.id = i, .vl = robot_message.vl[i], .vr = robot_message.vr[i], .checksum = robot_message.vr[i] + robot_message.vl[i]};
+    int32_t checksum = robot_message.vr[i] + robot_message.vl[i];
+    int16_t limitedChecksum = checksum >= 0 ? (int16_t)(abs(checksum % 32767)) : -(int16_t)(abs(checksum % 32767));
+
+    snd_message msg = {.id = i, .vl = robot_message.vl[i], .vr = robot_message.vr[i], .checksum = limitedChecksum};
     
     /* Sends the message using ESP-NOW */
     esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(snd_message));
