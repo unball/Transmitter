@@ -46,6 +46,7 @@ struct snd_message{
   int16_t id;
   int16_t vl;
   int16_t vr;
+  int16_t checksum;
 };
 #endif
 
@@ -199,7 +200,11 @@ void sendWifi(){
   result = true;
 
   for(uint8_t i=0 ; i<3 ; i++){
-    snd_message msg = {.id = i, .vl = robot_message.vl[i], .vr = robot_message.vr[i]};
+    
+    int32_t checksum = robot_message.vr[i] + robot_message.vl[i];
+    int16_t limitedChecksum = checksum >= 0 ? (int16_t)(abs(checksum % 32767)) : -(int16_t)(abs(checksum % 32767));
+
+    snd_message msg = {.id = i, .vl = robot_message.vl[i], .vr = robot_message.vr[i], .checksum = limitedChecksum};
     
     /* Sends the message using ESP-NOW */
     esp_now_send(broadcastAddress[i], (uint8_t *) &msg, sizeof(snd_message));
