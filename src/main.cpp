@@ -9,7 +9,9 @@
 #define WIFI_CHANNEL 12  //TODO: Test values
 
 /* Broadcast address, sends to everyone */
-uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+uint8_t broadcastAddress[3][7] = {{0xC8, 0xC9, 0xA3, 0x3A, 0xD9, 0xE5},
+                                  {0x5C, 0xCF, 0x7F, 0xDE, 0x1D, 0x36},
+                                  {0x2C, 0x3A, 0xE8, 0x00, 0xDE, 0xA0}};
 
 /* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
 struct RobotMessage{
@@ -200,7 +202,7 @@ void sendWifi(){
     snd_message msg = {.id = i, .vl = robot_message.vl[i], .vr = robot_message.vr[i]};
     
     /* Sends the message using ESP-NOW */
-    esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(snd_message));
+    esp_now_send(broadcastAddress[i], (uint8_t *) &msg, sizeof(snd_message));
     delay(3);
   }
   
@@ -225,7 +227,9 @@ void wifiSetup(){
 
   
   /* Registers the receiver of the message */
-  esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_SLAVE, WIFI_CHANNEL, NULL, 0);
+  for(int i = 0; i < 3; i++){
+    esp_now_add_peer(broadcastAddress[i], ESP_NOW_ROLE_SLAVE, WIFI_CHANNEL, NULL, 0);
+  }
 }
 
 /* Reads new robot_message from serial */
