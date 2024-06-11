@@ -65,6 +65,8 @@ void receiveUSBdata();
 /* Mensagem a ser transmitida */
 RobotMessage robot_message;
 
+esp_now_peer_info_t peer;
+
 /* Contagem de erros de transmissão via USB detectados */
 uint32_t erros = 0;
 uint32_t lastOK = 0;
@@ -210,7 +212,7 @@ void sendWifi(){
     snd_message msg = {.id = i, .v = robot_message.v[i], .w = robot_message.w[i], .checksum = limitedChecksum};
     
     /* Sends the message using ESP-NOW */
-    esp_now_send(broadcastAddress[i], (uint8_t *) &msg, sizeof(snd_message));
+    esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(snd_message));
     delay(3);
   }
   
@@ -222,17 +224,13 @@ void sendWifi(){
 /* Setup the Wi-Fi  */
 void wifiSetup(){
 
-  /*Sets WiFi max output*/
-  /*WiFi.setTxPower(WIFI_POWER_19_5dBm); Set max power replacement can be done with this and the define in the beggining of the file*/
+  Serial.begin(115200);
 
   /* Initialize the ESP-NOW */
   if (esp_now_init() != 0) {
     return;
   }
-  /*Set as wireless (Neither CONTROLLER nor SLAVE are present in the esp32 library)
-  esp_now_set_self_role(ESP_NOW_ROLE_CONTROLLER);
-  esp_now_register_send_cb(OnDataSent); */ 
-  
+   
   /*Starts Netif*/
   esp_netif_init(); /*ESP_ERROR_CHECK can also be added in every function here in wifiSetup()*/
 
@@ -256,8 +254,21 @@ void wifiSetup(){
   /*Set max power*/
   esp_wifi_set_max_tx_power(10);
 
-  /* Registers the receiver of the message 
-  esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_SLAVE, WIFI_CHANNEL, NULL, 0); Set channel function can be replaced with this and the define in the beggining of the file*/
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("Não inicializou ESP-NOW");
+    return;
+  }
+
+  memcpy(peer.peer_addr, broadcastAddress, 6);
+
+  if (esp_now_add_peer(&peer) != ESP_OK) 
+  {
+    Serial.println("Falha ao adicionar o peer");
+    return;
+  }
+
+
+  pinMode(LED_BUILTIN, OUTPUT);
 }
 
 /* Reads new robot_message from serial */
