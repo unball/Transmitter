@@ -253,9 +253,9 @@ void wifiSetup(){
       return;
   }
   
-  esp_err_t max = esp_wifi_set_max_tx_power(10);
+  esp_err_t error = esp_wifi_set_max_tx_power(10);
   
-  if (max == ESP_OK){
+  if (error == ESP_OK){
     return;
   }
 
