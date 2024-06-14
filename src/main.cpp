@@ -239,6 +239,13 @@ void wifiSetup(){
   if (esp_now_add_peer(&peerInfo) != ESP_OK) {  
       return;
   }
+  
+  esp_err_t max = esp_wifi_set_max_tx_power(10);
+  
+  if (max == ESP_OK){
+    return;
+  }
+
 }
 
 /* Reads new robot_message from serial */
