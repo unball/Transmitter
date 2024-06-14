@@ -258,7 +258,11 @@ void wifiSetup(){
   if (error == ESP_OK){
     return;
   }
+   esp_err_t error2 = esp_wifi_set_channel(12, WIFI_SECOND_CHAN_NONE);
 
+   if (error2 == ESP_OK){
+     return;
+   }
 }
 
 /* Reads new robot_message from serial */
