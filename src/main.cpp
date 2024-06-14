@@ -12,7 +12,7 @@
 #define WIFI_CHANNEL 12  //TODO: Test values */
 
 /* Broadcast address, sends to everyone */
-uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+uint8_t broadcastAddress[] = {0xCC, 0x8D, 0xA2, 0x8C, 0x31, 0xB6};
 
 /* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
 struct RobotMessage{
@@ -43,11 +43,11 @@ struct SerialConstants {
 };
 
 #else
-struct snd_message{
-  int16_t id;
+struct snd_message {
+  int8_t id;
   int16_t v;
   int16_t w;
-  int16_t checksum;
+  int32_t checksum;
 };
 #endif
 
@@ -57,15 +57,15 @@ struct SerialMessage {
   int16_t checksum;
 };
 
+/* Mensagem a ser transmitida */
+RobotMessage robot_message;
+
+esp_now_peer_info_t peerInfo;
+
 /* Declaração das funções */
 void wifiSetup();
 void sendWifi();
 void receiveUSBdata();
-
-/* Mensagem a ser transmitida */
-RobotMessage robot_message;
-
-esp_now_peer_info_t peer;
 
 /* Contagem de erros de transmissão via USB detectados */
 uint32_t erros = 0;
@@ -73,9 +73,8 @@ uint32_t lastOK = 0;
 bool result;
 
 //Callback when data is sent
-void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus)
-{
-  if (sendStatus == 0)
+void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+  if (status == ESP_NOW_SEND_SUCCESS)
     result = true;
   else
     result = false;
@@ -91,9 +90,8 @@ void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len){
 #endif
 
 /* Loop de setup */
-void setup(void) {
+void setup() {
   Serial.begin(115200);
-  while(!Serial);
   wifiSetup();
   pinMode(LED_BUILTIN, OUTPUT);
 }
@@ -213,62 +211,34 @@ void sendWifi(){
     
     /* Sends the message using ESP-NOW */
     esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(snd_message));
+    if (result == ESP_OK) {
+    lastOK = millis();
+    }
     delay(3);
   }
-  
-  if(result){
-    lastOK = millis();
-  }
+
 }
 
 /* Setup the Wi-Fi  */
-void wifiSetup(){
-
-  Serial.begin(115200);
+void wifiSetup(){ 
+  /* Puts the device in Wi-Fi Station mode */
+  WiFi.mode(WIFI_STA);
 
   /* Initialize the ESP-NOW */
-  if (esp_now_init() != 0) {
-    return;
-  }
-   
-  /*Starts Netif*/
-  esp_netif_init(); /*ESP_ERROR_CHECK can also be added in every function here in wifiSetup()*/
-
-  /*Loop*/
-  esp_event_loop_create_default();
-
-  /*Initialize the WiFi*/
-  wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-  esp_wifi_init(&cfg);
-
-  /*Sets storage*/
-  esp_wifi_set_storage(WIFI_STORAGE_RAM);
-
-  /* Puts the device in Wi-Fi Station mode */
-  esp_wifi_set_mode(WIFI_MODE_STA);
-  esp_wifi_start();
-
-  /*Set channel*/
-  esp_wifi_set_channel(12, WIFI_SECOND_CHAN_NONE);
-
-  /*Set max power*/
-  esp_wifi_set_max_tx_power(10);
-
   if (esp_now_init() != ESP_OK) {
-    Serial.println("Não inicializou ESP-NOW");
-    return;
+        Serial.println("Erro ao inicializar o ESP-NOW");
+        return;
+    }
+
+  esp_now_register_send_cb(OnDataSent);
+
+  esp_now_peer_info_t peerInfo;
+
+  memcpy(peerInfo.peer_addr, broadcastAddress, 6);
+
+  if (esp_now_add_peer(&peerInfo) != ESP_OK) {  
+      return;
   }
-
-  memcpy(peer.peer_addr, broadcastAddress, 6);
-
-  if (esp_now_add_peer(&peer) != ESP_OK) 
-  {
-    Serial.println("Falha ao adicionar o peer");
-    return;
-  }
-
-
-  pinMode(LED_BUILTIN, OUTPUT);
 }
 
 /* Reads new robot_message from serial */
