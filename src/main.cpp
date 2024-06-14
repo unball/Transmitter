@@ -223,7 +223,7 @@ void sendWifi(){
     snd_message msg = {.id = i, .v = robot_message.v[i], .w = robot_message.w[i], .checksum = limitedChecksum};
     
     /* Sends the message using ESP-NOW */
-    esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(snd_message));
+    esp_err_t result = esp_now_send(broadcastAddress[i], (uint8_t *) &msg, sizeof(snd_message));
     if (result == ESP_OK) {
     lastOK = millis();
     }
