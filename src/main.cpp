@@ -107,9 +107,35 @@ void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len){
 }
 #endif
 
+char receivedChar;
+boolean newData = false;
+uint8_t macAdd[7] = {0xCC,0x8D,0xA2,0x8B,0xCF,0xC8};
+void recvOneChar() {
+    if (Serial.available() > 0) {
+        receivedChar = Serial.read();
+        newData = true;
+    }
+}
+
+void showNewData() {
+    if (newData == true) {
+        Serial.print("This just in ... ");
+        Serial.println(receivedChar);
+        newData = false;
+        // Envia via rádio
+        static int32_t t = micros();
+        if(micros()-t >= 100){
+          t = micros();
+          sendWifi();
+        }
+    }
+}
+
 /* Loop de setup */
 void setup() {
-  Serial.begin(115200);
+  // Serial.begin(115200);
+  Serial.begin(9600);
+    Serial.println("<Arduino is ready>");
   wifiSetup();
   pinMode(LED_BUILTIN, OUTPUT);
 }
@@ -117,14 +143,12 @@ void setup() {
 /* Loop que é executado continuamente */
 void loop(){
     // Recebe robot_message via USB
-    receiveUSBdata();
+    // receiveUSBdata();
 
-    // Envia via rádio
-		static int32_t t = micros();
-		if(micros()-t >= 500){
-			t = micros();
-      sendWifi();
-		}
+    recvOneChar();
+    showNewData();
+
+  
 
     // Acende o LED se recebeu mensagem do USB em menos de 5ms
     if(millis()-lastOK < 5){
@@ -220,21 +244,12 @@ void sendWifi(){
 
   result = true;
 
-  for(uint8_t i=0 ; i<3 ; i++){
-    
-    int32_t checksum = robot_message.v[i] + robot_message.w[i];
-    int16_t limitedChecksum = checksum >= 0 ? (int16_t)(abs(checksum % 32767)) : -(int16_t)(abs(checksum % 32767));
-
-    snd_message msg = {.id = i, .v = robot_message.v[i], .w = robot_message.w[i], .checksum = limitedChecksum};
-    
     /* Sends the message using ESP-NOW */
-    esp_err_t result = esp_now_send(broadcastAddress[i], (uint8_t *) &msg, sizeof(snd_message));
+    esp_err_t result = esp_now_send(macAdd, (uint8_t *) &receivedChar, sizeof(receivedChar));
     if (result == ESP_OK) {
-    lastOK = millis();
+      lastOK = millis();
     }
-    delay(3);
-  }
-
+    delay(3);  
 }
 
 /* Setup the Wi-Fi  */
