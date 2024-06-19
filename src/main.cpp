@@ -23,9 +23,14 @@
 // 7 - {0xB4,0xE6,0x2D,0x04,0x06,0x4F}
 // 8 - {0x98,0xCD,0xAC,0x39,0x70,0xBC}
 
-uint8_t broadcastAddress[3][7] = {{0xCC, 0x8D, 0xA2, 0x8C, 0x31, 0xB6},
-                                  {0xC8, 0xC9, 0xA3, 0x3A, 0xDE, 0x9E},
-                                  {0x2C, 0x3A, 0xE8, 0x00, 0xDE, 0xA0}};
+/* Broadcast address, sends to everyone */
+// LISTA DE MAC DOS WEMOS32
+// a - {0xCC,0x8D,0xA2,0x8C,0x31,0xB6}
+// b - {0xCC,0x8D,0xA2,0x8B,0xCF,0xC8}
+
+uint8_t broadcastAddress[3][7] = {{0xCC,0x8D,0xA2,0x8C,0x31,0xB6},
+                                  {0xCC,0x8D,0xA2,0x8B,0xCF,0xC8},
+                                  {0x2C,0x3A,0xE8,0x00,0xDE,0xA0}};
 
 /* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
 struct RobotMessage{
@@ -243,14 +248,18 @@ void wifiSetup(){
         return;
     }
 
+
+  for(uint8_t i=0 ; i<3 ; i++){
+
   esp_now_register_send_cb(OnDataSent);
 
   esp_now_peer_info_t peerInfo;
 
-  memcpy(peerInfo.peer_addr, broadcastAddress, 6);
+  memcpy(peerInfo.peer_addr, broadcastAddress[i], 6);
 
   if (esp_now_add_peer(&peerInfo) != ESP_OK) {  
       return;
+    }
   }
   
   esp_err_t error = esp_wifi_set_max_tx_power(10);
