@@ -121,7 +121,7 @@ void loop(){
 
     // Envia via rádio
 		static int32_t t = micros();
-		if(micros()-t >= 500){
+		if(micros()-t >= 100){
 			t = micros();
       sendWifi();
 		}
