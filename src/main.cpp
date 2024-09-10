@@ -29,7 +29,7 @@
 // b - {0xCC,0x8D,0xA2,0x8B,0xCF,0xC8}
 
 uint8_t broadcastAddress[3][7] = {{0xCC,0x8D,0xA2,0x8B,0xA9,0xCE},
-                                  {0xCC,0x8D,0xA2,0x8B,0xD1,0x62},
+                                  {0xCC,0x8D,0xA2,0x8B,0xD1,0x50},
                                   {0xCC,0x8D,0xA2,0x8B,0xD1,0x36}};
 
 /* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
@@ -117,7 +117,7 @@ void setup() {
 /* Loop que é executado continuamente */
 void loop(){
     // Recebe robot_message via USB
-    receiveUSBdata();
+    //receiveUSBdata();
 
     // Envia via rádio
 		static int32_t t = micros();
@@ -225,7 +225,8 @@ void sendWifi(){
     int32_t checksum = robot_message.v[i] + robot_message.w[i];
     int16_t limitedChecksum = checksum >= 0 ? (int16_t)(abs(checksum % 32767)) : -(int16_t)(abs(checksum % 32767));
 
-    snd_message msg = {.id = i, .v = robot_message.v[i], .w = robot_message.w[i], .checksum = limitedChecksum};
+    snd_message msg = {.id = i, .v = 1, .w = 2, .checksum = 3};
+    printf ("O valor de w é: %d\n", msg.id);
     
     /* Sends the message using ESP-NOW */
     esp_err_t result = esp_now_send(broadcastAddress[i], (uint8_t *) &msg, sizeof(snd_message));
@@ -248,7 +249,6 @@ void wifiSetup(){
         return;
     }
 
-
   for(uint8_t i=0 ; i<3 ; i++){
 
   esp_now_register_send_cb(OnDataSent);
@@ -256,13 +256,16 @@ void wifiSetup(){
   esp_now_peer_info_t peerInfo;
 
   memcpy(peerInfo.peer_addr, broadcastAddress[i], 6);
+  peerInfo.encrypt = false;
 
   if (esp_now_add_peer(&peerInfo) != ESP_OK) {  
+      Serial.println("Erro ao adicionar o peer");
       return;
     }
   }
   
-  esp_err_t error = esp_wifi_set_max_tx_power(10);
+  
+  esp_err_t error = esp_wifi_set_max_tx_power(20);
   
   if (error == ESP_OK){
     return;
