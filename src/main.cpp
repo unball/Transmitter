@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <sstream>
 #include <SPI.h>
 #include <WiFi.h>
 #include <esp_now.h>
@@ -28,9 +29,10 @@
 // a - {0xCC,0x8D,0xA2,0x8C,0x31,0xB6}
 // b - {0xCC,0x8D,0xA2,0x8B,0xCF,0xC8}
 
-uint8_t broadcastAddress[3][7] = {{0xCC,0x8D,0xA2,0x8B,0xA9,0xCE},
+uint8_t broadcastAddress[3][7] = {{0xCC,0x8D,0xA2,0x8B,0xD1,0x36},
                                   {0xCC,0x8D,0xA2,0x8B,0xD1,0x50},
-                                  {0xCC,0x8D,0xA2,0x8B,0xD1,0x36}};
+                                  {0xCC,0x8D,0xA7,0x8B,0x41,0x36}};
+
 
 /* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
 struct RobotMessage{
@@ -224,12 +226,14 @@ void sendWifi(){
     
     int32_t checksum = robot_message.v[i] + robot_message.w[i];
     int16_t limitedChecksum = checksum >= 0 ? (int16_t)(abs(checksum % 32767)) : -(int16_t)(abs(checksum % 32767));
-
-    snd_message msg = {.id = i, .v = 1, .w = 2, .checksum = 3};
-    printf ("O valor de w é: %d\n", msg.id);
     
+    // padrão da mensagem: "<id,v,w,checksum>"
+    std::stringstream parser;
+    parser << "<" << i << "," << robot_message.v[i] << "," << robot_message.w[i] << "," << limitedChecksum << ">"<<"\0"; 
+    //printf("%s\n",(parser.str()).c_str());
+
     /* Sends the message using ESP-NOW */
-    esp_err_t result = esp_now_send(broadcastAddress[i], (uint8_t *) &msg, sizeof(snd_message));
+    esp_err_t result = esp_now_send(broadcastAddress[i], (uint8_t *) (parser.str()).c_str(), (parser.str()).size());
     if (result == ESP_OK) {
     lastOK = millis();
     }
@@ -237,6 +241,7 @@ void sendWifi(){
   }
 
 }
+
 
 /* Setup the Wi-Fi  */
 void wifiSetup(){ 
