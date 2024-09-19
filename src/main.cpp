@@ -28,10 +28,9 @@
 // a - {0xCC,0x8D,0xA2,0x8C,0x31,0xB6}
 // b - {0xCC,0x8D,0xA2,0x8B,0xCF,0xC8}
 
-uint8_t broadcastAddress[3][6] = {{0xCC,0x8D,0xF2,0x6B,0xD0,0xCC},
-                                  {0xCC,0x8D,0xA2,0x8B,0xD1,0x36},
-                                  {0xCC,0x8D,0xF7,0x0B,0x81,0x36}};
-
+uint8_t deviceAddress[3][6] = { {0xCC,0x8D,0xF2,0x6B,0xD0,0xCC},
+                                {0xCC,0x8D,0xA2,0x8B,0xD1,0x36},
+                                {0xCC,0x8D,0xF7,0x0B,0x81,0x36} };
 
 /* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
 struct RobotMessage{
@@ -58,14 +57,11 @@ void receiveUSBdata();
 /* Contagem de erros de transmissão via USB detectados */
 uint32_t erros = 0;
 uint32_t lastOK = 0;
-bool result=false;
+bool ackFlag=false;
 
 //Callback when data is sent
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
-  if (status == ESP_NOW_SEND_SUCCESS)
-    result = true;
-  else
-    result = false;
+  ackFlag = (status == ESP_NOW_SEND_SUCCESS) ;
 }
 
 /* Loop de setup */
@@ -87,8 +83,10 @@ void loop(){
       sendWifi();
 		}
 
-    // Acende o LED se recebeu mensagem do USB em menos de 5ms
-    if(millis()-lastOK < 5){
+    // Acende o LED se recebeu mensagem do USB em menos de 40ms
+    //Serial.print("latencia de: "); Serial.println(millis()-lastOK); //ms
+    // Sabe-se que a latência média de transmissão é de 36ms
+    if(millis()-lastOK < 40){
       digitalWrite(LED_BUILTIN, HIGH);
     }
     else{
@@ -101,21 +99,38 @@ void loop(){
 void sendWifi(){
   for(uint8_t i=0 ; i<3 ; i++){
 
-    result = true;  // ??
+    ackFlag = false;  // Inicializa como false antes do envio
     int32_t checksum = robot_message.v[i] + robot_message.w[i];
     int16_t limitedChecksum = checksum >= 0 ? (int16_t)(abs(checksum % 32767)) : -(int16_t)(abs(checksum % 32767));
-
     // padrão da mensagem: "<id,v,w,checksum>"
     std::stringstream parser;
     parser << '<' << (short int)i << ',' << robot_message.v[i] << ',' << robot_message.w[i] << ',' << limitedChecksum << '>' << '\0'; 
     //printf("%s\n",(parser.str()).c_str());
 
-    esp_err_t sendResult = esp_now_send(broadcastAddress[i], (uint8_t *) (parser.str()).c_str(), (parser.str()).size());
+    esp_err_t sendResult = esp_now_send(deviceAddress[i], (uint8_t *) (parser.str()).c_str(), (parser.str()).size());
+
     if (sendResult == ESP_OK) {
-    lastOK = millis();
+
+      constexpr unsigned long TIMEOUT_MS = 30;  // Timeout para o ACK. Caso necessário, mude aqui || use const caso tenha erros de compilação
+      unsigned long startTime = millis();
+
+      while (!ackFlag && (millis() - startTime) < TIMEOUT_MS) {
+        vTaskDelay(pdMS_TO_TICKS(1));
+      }
+
+      if (ackFlag) {
+        // ACK recebido
+        Serial.print("Mensagem recebida e ACK recebido do robô ");
+        Serial.print(i);
+        lastOK=millis();
+      } else{
+        // ACK não recebido no tempo estabelecido
+        Serial.print("Falha ao enviar ou não foi recebido o ACK para o robô ");
+        Serial.println(i);
+      }
     }
 
-    delay(3);
+    vTaskDelay(pdMS_TO_TICKS(3));
   }
 }
 
@@ -136,7 +151,7 @@ void wifiSetup(){
 
   esp_now_peer_info_t peerInfo;
 
-  memcpy(peerInfo.peer_addr, broadcastAddress[i], 6);
+  memcpy(peerInfo.peer_addr, deviceAddress[i], 6);
   peerInfo.encrypt = false;
 
   if (esp_now_add_peer(&peerInfo) != ESP_OK) {  
