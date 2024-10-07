@@ -5,6 +5,10 @@
 #include <esp_now.h>
 #include <esp_wifi.h>
 
+#define DEBUG_MODE 0
+
+// Macros para controle de impressão de mensagens de depuração
+
 uint8_t deviceAddress[3][6] = { {0xCC,0x8D,0xF2,0x6B,0xD0,0xCC},
                                 {0xCC,0x8D,0xA2,0x8B,0xD1,0x36},
                                 {0xCC,0x8D,0xF7,0x0B,0x81,0x36} };
@@ -73,42 +77,48 @@ void loop(){
 }
 
 /* Sends the message via Wi-Fi */
-void sendWifi(){
-  for(uint8_t i=0 ; i<3 ; i++){
+void sendWifi() {
+    for (uint8_t i = 0; i < 3; i++) {
 
-    ackFlag = false;  // Inicializa como false antes do envio
-    int32_t checksum = robot_message.v[i] + robot_message.w[i];
-    int16_t limitedChecksum = checksum >= 0 ? (int16_t)(abs(checksum % 32767)) : -(int16_t)(abs(checksum % 32767));
-    // padrão da mensagem: "<id,v,w,checksum>"
-    std::stringstream parser;
-    parser << '[' << (short int)i << ',' << robot_message.v[i] << ',' << robot_message.w[i] << ',' << limitedChecksum << ']' << '\0'; 
-    //printf("%s\n",(parser.str()).c_str());
+        ackFlag = false;  // Inicializa a flag de ACK como false antes do envio
 
-    esp_err_t sendResult = esp_now_send(deviceAddress[i], (uint8_t *) (parser.str()).c_str(), (parser.str()).size());
+        // Calcula o checksum com base nas velocidades do robô
+        int32_t checksum = robot_message.v[i] + robot_message.w[i];
+        int16_t limitedChecksum = checksum >= 0 ? (int16_t)(abs(checksum % 32767)) : -(int16_t)(abs(checksum % 32767));
 
-    if (sendResult == ESP_OK) {
+        // Cria a mensagem padrão: "<id,v,w,checksum>"
+        std::stringstream parser;
+        parser << '[' << (short int)i << ',' << robot_message.v[i] << ',' << robot_message.w[i] << ',' << limitedChecksum << ']' << '\0';
 
-      constexpr unsigned long TIMEOUT_MS = 30;  // Timeout para o ACK. Caso necessário, mude aqui || use const caso tenha erros de compilação
-      unsigned long startTime = millis();
+        // Imprime a mensagem que está sendo enviada
+        Serial.print("Enviando mensagem: ");
+        Serial.println(parser.str().c_str());
 
-      while (!ackFlag && (millis() - startTime) < TIMEOUT_MS) {
-        vTaskDelay(pdMS_TO_TICKS(1));
-      }
+        // Envia a mensagem via ESP-NOW
+        esp_err_t sendResult = esp_now_send(deviceAddress[i], (uint8_t *)(parser.str()).c_str(), (parser.str()).size());
 
-      if (ackFlag) {
-        // ACK recebido
-        Serial.print("Mensagem recebida e ACK recebido do robô ");
-        Serial.println(i);
-        lastOK=millis();
-      } else{
-        // ACK não recebido no tempo estabelecido
-        Serial.print("Falha ao enviar ou não foi recebido o ACK para o robô ");
-        Serial.println(i);
-      }
+        if (sendResult == ESP_OK) {
+
+            constexpr unsigned long TIMEOUT_MS = 30;  // Timeout para o ACK (30 ms)
+            unsigned long startTime = millis(); // Captura o tempo de início
+
+            // Loop para esperar pelo ACK ou até que o tempo limite expire
+            while (!ackFlag && (millis() - startTime) < TIMEOUT_MS) {
+                vTaskDelay(pdMS_TO_TICKS(1)); 
+            }
+
+            if (ackFlag) {
+                Serial.print("Mensagem recebida e ACK recebido do robô ");
+                Serial.println(i); // Imprime o índice do robô que respondeu
+                lastOK = millis(); // Atualiza o tempo da última comunicação bem-sucedida
+            } else {
+                Serial.print("Falha ao enviar ou não foi recebido o ACK para o robô ");
+                Serial.println(i); // Imprime o índice do robô que não respondeu
+            }
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(3)); // Espera 3 ms antes de enviar a próxima mensagem
     }
-
-    vTaskDelay(pdMS_TO_TICKS(3));
-  }
 }
 
 /* Setup the Wi-Fi  */
