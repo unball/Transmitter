@@ -5,6 +5,8 @@
 #include <esp_now.h>
 #include <esp_wifi.h>
 
+#define DEBUG 1
+
 uint8_t deviceAddress[3][6] = { {0xCC,0x8D,0xF2,0x6B,0xD0,0xCC},
                                 {0xCC,0x8D,0xA2,0x8B,0xD1,0x36},
                                 {0xCC,0x8D,0xF7,0x0B,0x81,0x36} };
@@ -37,9 +39,11 @@ uint32_t lastOK = 0;
 bool ackFlag=false;
 
 //Callback when data is sent
+#if DEBUG
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
   ackFlag = (status == ESP_NOW_SEND_SUCCESS) ;
 }
+#endif
 
 /* Loop de setup */
 void setup() {
@@ -63,7 +67,7 @@ void loop(){
     // Acende o LED se recebeu mensagem do USB em menos de 40ms
     //Serial.print("latencia de: "); Serial.println(millis()-lastOK); //ms
     // Sabe-se que a latência média de transmissão é de 36ms
-    if(millis()-lastOK < 40){
+    if(millis()-lastOK < (DEBUG?40:5) ){
       digitalWrite(LED_BUILTIN, HIGH);
     }
     else{
@@ -76,7 +80,6 @@ void loop(){
 void sendWifi(){
   for(uint8_t i=0 ; i<3 ; i++){
 
-    ackFlag = false;  // Inicializa como false antes do envio
     int32_t checksum = robot_message.v[i] + robot_message.w[i];
     int16_t limitedChecksum = checksum >= 0 ? (int16_t)(abs(checksum % 32767)) : -(int16_t)(abs(checksum % 32767));
     // padrão da mensagem: "<id,v,w,checksum>"
@@ -88,6 +91,7 @@ void sendWifi(){
 
     if (sendResult == ESP_OK) {
 
+    #if DEBUG
       constexpr unsigned long TIMEOUT_MS = 30;  // Timeout para o ACK. Caso necessário, mude aqui || use const caso tenha erros de compilação
       unsigned long startTime = millis();
 
@@ -105,8 +109,11 @@ void sendWifi(){
         Serial.print("Falha ao enviar ou não foi recebido o ACK para o robô ");
         Serial.println(i);
       }
+      ackFlag=false;
+    #else
+      lastOK=millis();
+    #endif
     }
-
     vTaskDelay(pdMS_TO_TICKS(3));
   }
 }
@@ -122,7 +129,9 @@ void wifiSetup(){
         return;
     }
 
+  #if DEBUG
   esp_now_register_send_cb(OnDataSent);
+  #endif
 
   for(uint8_t i=0 ; i<3 ; i++){
 
