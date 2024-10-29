@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <cstdint>
 #include <sstream>
 #include <SPI.h>
 #include <WiFi.h>
@@ -7,14 +8,14 @@
 
 #define DEBUG 1
 
-uint8_t deviceAddress[3][6] = { {0xCC,0x8D,0xF2,0x6B,0xD0,0xCC},
+uint8_t deviceAddress[3][6] = { {0xCC,0x8D,0xA2,0x8D,0x0D,0x7C},
                                 {0xCC,0x8D,0xA2,0x8B,0xD1,0x36},
                                 {0xCC,0x8D,0xF7,0x0B,0x81,0x36} };
 
 /* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
 struct RobotMessage{
-  int16_t v[3];
-  int16_t w[3];
+  float v[3];
+  float w[3];
 };
 
 /* Estrutura para a mensagem a ser recebida do USB */
@@ -80,12 +81,11 @@ void loop(){
 void sendWifi(){
   for(uint8_t i=0 ; i<3 ; i++){
 
-    int32_t checksum = robot_message.v[i] + robot_message.w[i];
+    int32_t checksum = static_cast<int32_t>(robot_message.v[i]) + static_cast<int32_t>(robot_message.w[i]);
     int16_t limitedChecksum = checksum >= 0 ? (int16_t)(abs(checksum % 32767)) : -(int16_t)(abs(checksum % 32767));
-    // padrão da mensagem: "<id,v,w,checksum>"
+    // padrão da mensagem: "[id,v,w,checksum]"
     std::stringstream parser;
-    parser << '[' << (short int)i << ',' << robot_message.v[i] << ',' << robot_message.w[i] << ',' << limitedChecksum << ']' << '\0'; 
-    //printf("%s\n",(parser.str()).c_str());
+-    parser << '[' << (short int)i << ',' << robot_message.v[i] << ',' << robot_message.w[i] << ',' << limitedChecksum << ']' << '\0';     //printf("%s\n",(parser.str()).c_str());
 
     esp_err_t sendResult = esp_now_send(deviceAddress[i], (uint8_t *) (parser.str()).c_str(), (parser.str()).size());
 
@@ -177,9 +177,9 @@ void receiveUSBdata(){
       Serial.readBytes((char*)(&receive), (size_t)sizeof(SerialMessage));
 
       /* Faz o checksum */
-      int32_t checksum = 0;
+      int64_t checksum = 0;
       for(int i=0 ; i<3 ; i++){
-        checksum += receive.data.v[i] + receive.data.w[i];
+        checksum += static_cast<int64_t>(intreceive.data.v[i]) + static_cast<int64_t>(receive.data.w[i]);
       }
 
       int16_t limitedChecksum = checksum >= 0 ? (int16_t)(abs(checksum % 32767)) : -(int16_t)(abs(checksum % 32767));
