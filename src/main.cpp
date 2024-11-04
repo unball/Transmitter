@@ -6,11 +6,11 @@
 #include <esp_now.h>
 #include <esp_wifi.h>
 
-#define DEBUG 1
+#define DEBUG 0
 
 uint8_t deviceAddress[3][6] = { {0xCC,0x8D,0xA2,0x8D,0x0D,0x7C},
                                 {0xCC,0x8D,0xA2,0x8B,0xD1,0x36},
-                                {0xCC,0x8D,0xF7,0x0B,0x81,0x36} };
+                                {0x80,0x65,0x99,0xFC,0x40,0xCC} };
 
 /* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
 struct RobotMessage{
@@ -56,7 +56,7 @@ void setup() {
 /* Loop que é executado continuamente */
 void loop(){
     // Recebe robot_message via USB
-    //receiveUSBdata();
+    receiveUSBdata();
 
     // Envia via rádio
 		static int32_t t = micros();
@@ -81,8 +81,8 @@ void loop(){
 void sendWifi(){
   for(uint8_t i=0 ; i<3 ; i++){
 
-    int64_t checksum = static_cast<int32_t>(robot_message.v[i]) + static_cast<int32_t>(robot_message.w[i]);
-    int32_t limitedChecksum = checksum >= 0 ? (int32_t)(abs(checksum % INT_MAX)) : -(int32_t)(abs(checksum % INT_MAX));
+    int32_t checksum = robot_message.v[i] + robot_message.w[i];
+    int16_t limitedChecksum = checksum >= 0 ? (int16_t)(abs(checksum % 32767)) : -(int16_t)(abs(checksum % 32767));
     // padrão da mensagem: "[id,v,w,checksum]"
     std::stringstream parser;
     parser << '[' << (short int)i << ',' << robot_message.v[i] << ',' << robot_message.w[i] << ',' << limitedChecksum << ']' << '\0';     //printf("%s\n",(parser.str()).c_str());
@@ -148,12 +148,12 @@ void wifiSetup(){
 
   esp_err_t error = esp_wifi_set_max_tx_power(20);
 
-  if (error == ESP_OK){
+  if (error != ESP_OK){
     return;
   }
    esp_err_t error2 = esp_wifi_set_channel(12, WIFI_SECOND_CHAN_NONE);
 
-   if (error2 == ESP_OK){
+   if (error2 != ESP_OK){
      return;
    }
 }
@@ -164,20 +164,22 @@ void receiveUSBdata(){
     
   while(Serial.available()){
     /* Lê um caracter da mensagem */
-    char characters[4]={0};
-    Serial.readBytes(characters,3);
+    char character = Serial.read();
+
+    /* Incrementa o contador se for 'B' */
+    if(character == 'B') initCounter++;
 
     /* Se os três primeiros caracteres são 'B' então de fato é o início da mensagem */
-    if( !(strcmp(characters,"BBB") )){
+    if(initCounter >= 3){
       SerialMessage receive;
       
       /* Lê a mensagem até o caracter de terminação e a decodifica */
       Serial.readBytes((char*)(&receive), (size_t)sizeof(SerialMessage));
 
       /* Faz o checksum */
-      int64_t checksum = 0;
+      int32_t checksum = 0;
       for(int i=0 ; i<3 ; i++){
-        checksum += static_cast<int64_t>(receive.data.v[i]) + static_cast<int64_t>(receive.data.w[i]);
+        checksum += receive.data.v[i] + receive.data.w[i];
       }
 
       int16_t limitedChecksum = checksum >= 0 ? (int16_t)(abs(checksum % 32767)) : -(int16_t)(abs(checksum % 32767));
