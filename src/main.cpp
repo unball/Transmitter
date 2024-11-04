@@ -14,8 +14,8 @@ uint8_t deviceAddress[3][6] = { {0xCC,0x8D,0xA2,0x8D,0x0D,0x7C},
 
 /* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
 struct RobotMessage{
-  float v[3];
-  float w[3];
+  int16_t v[3];
+  int16_t w[3];
 };
 
 /* Estrutura para a mensagem a ser recebida do USB */
@@ -151,7 +151,7 @@ void wifiSetup(){
   if (error != ESP_OK){
     return;
   }
-   esp_err_t error2 = esp_wifi_set_channel(12, WIFI_SECOND_CHAN_NONE);
+   esp_err_t error2 = esp_wifi_set_channel(14, WIFI_SECOND_CHAN_NONE);
 
    if (error2 != ESP_OK){
      return;
@@ -198,7 +198,7 @@ void receiveUSBdata(){
         for(uint16_t i=0 ; i<sizeof(SerialMessage) ; i++){
           Serial.printf("%p ", ((char*)&receive)[i]);
         }
-        Serial.println("");
+        //Serial.println("");
         //Serial.printf("%p\t%p\t%p\n", checksum, robot_message.v[0], robot_message.w[0]);
       }
 
