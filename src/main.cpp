@@ -16,8 +16,9 @@ uint8_t deviceAddress[3][6] = { {0xCC,0x8D,0xA2,0x8D,0x0D,0x7C},
 
 /* Estrutura para a mensagem a ser transmitida para o robô via Wi-Fi */
 struct RobotMessage {
-  int16_t v[3];
-  int16_t w[3];
+  int16_t vx;
+  int16_t vy;
+  int16_t w;
 };
 
 /* Estrutura para a mensagem a ser recebida do USB */
@@ -92,32 +93,24 @@ void detectKeyPressAndSend() {
 
         // Interpreta o comando
         if (input == "W" || "w") {  // Frente
-            x_dot = 1.0;
-            y_dot = 0.0;
-            omega_dot = 0.0;
-            robot_message.v[0] = 1;
-            robot_message.w[0] = 0;
+            robot_message.vx = 0;
+            robot_message.vy = 1;
+            robot_message.w = 0;
             Serial.println("Comando: Frente");
         } else if (input == "A" || "a") {  // Esquerda
-            x_dot = 0.5;
-            y_dot = 0.0;
-            omega_dot = -0.5;
-            robot_message.v[0] = 0.5;
-            robot_message.w[0] = -0.5;
+            robot_message.vx = -1;
+            robot_message.vy = 0;
+            robot_message.w = -0.5;
             Serial.println("Comando: Esquerda");
         } else if (input == "S" || "s") {  // Ré
-            x_dot = -1.0;
-            y_dot = 0.0;
-            omega_dot = 0.0;
-            robot_message.v[0] = -1;
-            robot_message.w[0] = 0;
+            robot_message.vx = 0;
+            robot_message.vy = -1;
+            robot_message.w = 0;
             Serial.println("Comando: Ré");
         } else if (input == "D" || "d") {  // Direita
-            x_dot = 0.5;
-            y_dot = 0.0;
-            omega_dot = 0.5;
-            robot_message.v[0] = 0.5;
-            robot_message.w[0] = 0.5;
+            robot_message.vx = 1;
+            robot_message.vy = 0;
+            robot_message.w = 0;
             Serial.println("Comando: Direita");
         } else {
             Serial.println("Comando desconhecido");
@@ -131,11 +124,11 @@ void detectKeyPressAndSend() {
 /* Sends the message via Wi-Fi */
 void sendWifi() {
     for (uint8_t i = 0; i < 3; i++) {
-        int32_t checksum = robot_message.v[i] + robot_message.w[i];
+        int32_t checksum = robot_message.vx + robot_message.vy + robot_message.w;
         int16_t limitedChecksum = checksum >= 0 ? (int16_t)(abs(checksum % 32767)) : -(int16_t)(abs(checksum % 32767));
 
         std::stringstream parser;
-        parser << '[' << (short int)i << ',' << robot_message.v[i] << ',' << robot_message.w[i] << ',' << limitedChecksum << ']' << '\0';
+        parser << '[' << (short int)i << ',' << robot_message.vx << ',' << robot_message.vy << ',' << robot_message.w << limitedChecksum << ']' << '\0';
 
         esp_err_t sendResult = esp_now_send(deviceAddress[i], (uint8_t *)(parser.str()).c_str(), (parser.str()).size());
 
@@ -206,15 +199,13 @@ void receiveUSBdata() {
             Serial.readBytes((char *)(&receive), (size_t)sizeof(SerialMessage));
 
             int32_t checksum = 0;
-            for (int i = 0; i < 3; i++) {
-                checksum += receive.data.v[i] + receive.data.w[i];
-            }
+            checksum += receive.data.vx + receive.data.vy + receive.data.w;
 
             int16_t limitedChecksum = checksum >= 0 ? (int16_t)(abs(checksum % 32767)) : -(int16_t)(abs(checksum % 32767));
 
             if (limitedChecksum == receive.checksum) {
                 robot_message = receive.data;
-                Serial.printf("%d\t%d\t%d\n", limitedChecksum, robot_message.v[0], robot_message.w[0]);
+                Serial.printf("%d\t%d\t%d\n", limitedChecksum, robot_message.vx, robot_message.vy, robot_message.w);
             } else {
                 for (uint16_t i = 0; i < sizeof(SerialMessage); i++) {
                     Serial.printf("%p ", ((char *)&receive)[i]);
