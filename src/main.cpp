@@ -10,104 +10,91 @@
 
 #define DEBUG 0
 
-uint8_t deviceAddress[3][6] = { {0xCC,0x8D,0xA2,0x8D,0x0D,0x7C},
+uint8_t deviceAddress[4][6] = { {0xA0,0xDD,0x6C,0x04,0x7E,0x0C},
+                                {0xCC,0x8D,0xA2,0x8D,0x0D,0x7C},
                                 {0xCC,0x8D,0xA2,0x8B,0xD1,0x36},
-                                {0x80,0x65,0x99,0xFC,0x40,0xCC} };
+                                {0x80,0x65,0x99,0xFC,0x40,0xCC},
+                                 };
 
-/* Estrutura para a mensagem a ser transmitida para o robô via Wi-Fi */
 struct RobotMessage {
   int16_t vx;
   int16_t vy;
   int16_t w;
 };
 
-/* Estrutura para a mensagem a ser recebida do USB */
 struct SerialMessage {
   RobotMessage data;
   int16_t checksum;
 };
 
-/* Mensagem a ser transmitida */
 RobotMessage robot_message;
 
 esp_now_peer_info_t peerInfo;
 
-/* Declaração das funções */
 void wifiSetup();
 void sendWifi();
 void receiveUSBdata();
 void detectKeyPressAndSend();
 
-/* Contagem de erros de transmissão via USB detectados */
 uint32_t erros = 0;
 uint32_t lastOK = 0;
 bool ackFlag = false;
 
-// Variáveis para velocidades de movimento
-float x_dot = 0.0;   // Velocidade na direção x
-float y_dot = 0.0;   // Velocidade na direção y
-float omega_dot = 0.0;  // Velocidade angular
+float x_dot = 0.0;   
+float y_dot = 0.0;   
+float omega_dot = 0.0;  
 
-// Callback when data is sent
 #if DEBUG
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
   ackFlag = (status == ESP_NOW_SEND_SUCCESS);
 }
 #endif
 
-/* Loop de setup */
 void setup() {
   Serial.begin(115200);
   wifiSetup();
   pinMode(LED_BUILTIN, OUTPUT);
 }
 
-/* Loop que é executado continuamente */
 void loop() {
-    // Recebe robot_message via USB
-    receiveUSBdata();
-
-    // Envia via Wi-Fi
+    //receiveUSBdata();
     static int32_t t = micros();
     if (micros() - t >= 100) {
         t = micros();
         sendWifi();
     }
 
-    // Acende o LED se recebeu mensagem do USB em menos de 40ms
     if (millis() - lastOK < (DEBUG ? 40 : 5)) {
         digitalWrite(LED_BUILTIN, HIGH);
     } else {
         digitalWrite(LED_BUILTIN, LOW);
     }
 
-    // Detecta a tecla pressionada e envia o comando correspondente
     detectKeyPressAndSend();
 }
 
 void detectKeyPressAndSend() {
     if (Serial.available()) {
-        String input = Serial.readStringUntil('\n');  // Lê até uma nova linha ou ENTER
+        String input = Serial.readStringUntil('\n');  
 
-        input.trim();  // Remove espaços e quebras de linha extras
+        input.trim();  
 
-        // Interpreta o comando
-        if (input == "W" || "w") {  // Frente
+        if (input == "W") {  
             robot_message.vx = 0;
             robot_message.vy = 1;
             robot_message.w = 0;
             Serial.println("Comando: Frente");
-        } else if (input == "A" || "a") {  // Esquerda
+        } else if (input == "A") {  
             robot_message.vx = -1;
             robot_message.vy = 0;
             robot_message.w = -0.5;
             Serial.println("Comando: Esquerda");
-        } else if (input == "S" || "s") {  // Ré
+        } else if (input == "S" ) {  
             robot_message.vx = 0;
             robot_message.vy = -1;
             robot_message.w = 0;
             Serial.println("Comando: Ré");
-        } else if (input == "D" || "d") {  // Direita
+        } else if (input == "D" ) {  
             robot_message.vx = 1;
             robot_message.vy = 0;
             robot_message.w = 0;
@@ -116,14 +103,12 @@ void detectKeyPressAndSend() {
             Serial.println("Comando desconhecido");
         }
 
-        // Envia o comando atualizado para o robô
         sendWifi();
     }
 }
 
-/* Sends the message via Wi-Fi */
 void sendWifi() {
-    for (uint8_t i = 0; i < 3; i++) {
+    for (uint8_t i = 0; i < 1; i++) {
         int32_t checksum = robot_message.vx + robot_message.vy + robot_message.w;
         int16_t limitedChecksum = checksum >= 0 ? (int16_t)(abs(checksum % 32767)) : -(int16_t)(abs(checksum % 32767));
 
@@ -158,7 +143,6 @@ void sendWifi() {
     }
 }
 
-/* Setup the Wi-Fi */
 void wifiSetup() { 
   WiFi.mode(WIFI_STA);
 
@@ -185,7 +169,6 @@ void wifiSetup() {
   esp_wifi_set_channel(14, WIFI_SECOND_CHAN_NONE);
 }
 
-/* Reads new robot_message from serial */
 void receiveUSBdata() {
     int initCounter = 0;
 
