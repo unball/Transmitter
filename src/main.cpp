@@ -8,9 +8,9 @@
 
 #define DEBUG 0
 
-uint8_t deviceAddress[3][6] = { {0xCC,0x8D,0xA2,0x8D,0x0D,0x7C},
-                                {0xCC,0x8D,0xA2,0x8B,0xD1,0x36},
-                                {0x80,0x65,0x99,0xFC,0x40,0xCC} };
+uint8_t deviceAddress[3][6] = { {0xCC,0x8D,0xA2,0x8D,0x0D,0xD4},
+                                {0xCC,0x8D,0xA2,0x8D,0x0D,0x02},
+                                {0xCC,0x8D,0xA2,0x8B,0xD0,0x2A} };
 
 /* Estrutura para a mensagem a ser transmitida para o robô via wi-fi */
 struct RobotMessage{
@@ -19,11 +19,6 @@ struct RobotMessage{
 };
 
 /* Estrutura para a mensagem a ser recebida do USB */
-struct SerialMessage {
-  RobotMessage data;
-  int16_t checksum;
-};
-
 /* Mensagem a ser transmitida */
 RobotMessage robot_message;
 
@@ -59,11 +54,11 @@ void loop(){
     receiveUSBdata();
 
     // Envia via rádio
-		static int32_t t = micros();
-		if(micros()-t >= 100){
-			t = micros();
-      sendWifi();
-		}
+		// static int32_t t = micros();
+		// if(micros()-t >= 10){
+			// t = micros();
+    sendWifi();
+		// }
 
     // Acende o LED se recebeu mensagem do USB em menos de 40ms
     //Serial.print("latencia de: "); Serial.println(millis()-lastOK); //ms
@@ -114,7 +109,7 @@ void sendWifi(){
       lastOK=millis();
     #endif
     }
-    vTaskDelay(pdMS_TO_TICKS(3));
+    vTaskDelay(pdMS_TO_TICKS(0.01));
   }
 }
 
@@ -158,53 +153,44 @@ void wifiSetup(){
    }
 }
 
-/* Reads new robot_message from serial */
+struct __attribute__((packed)) SerialMessage {
+  int16_t v[3];       
+  int16_t w[3];       
+  int16_t checksum;   
+};
+
+SerialMessage received_message;
+
+
 void receiveUSBdata(){
-  int initCounter = 0;
-    
-  while(Serial.available()){
-    /* Lê um caracter da mensagem */
-    char character = Serial.read();
 
-    /* Incrementa o contador se for 'B' */
-    if(character == 'B') initCounter++;
-
-    /* Se os três primeiros caracteres são 'B' então de fato é o início da mensagem */
-    if(initCounter >= 3){
-      SerialMessage receive;
-      
-      /* Lê a mensagem até o caracter de terminação e a decodifica */
-      Serial.readBytes((char*)(&receive), (size_t)sizeof(SerialMessage));
-
-      /* Faz o checksum */
-      int32_t checksum = 0;
-      for(int i=0 ; i<3 ; i++){
-        checksum += receive.data.v[i] + receive.data.w[i];
-      }
-
-      int16_t limitedChecksum = checksum >= 0 ? (int16_t)(abs(checksum % 32767)) : -(int16_t)(abs(checksum % 32767));
-
-      /* Verifica o checksum */
-      if(limitedChecksum == receive.checksum){
-        /* Copia para o buffer global de robot_message */
-        robot_message = receive.data;
-
-        /* Reporta que deu certo */
-        Serial.printf("%d\t%d\t%d\n", limitedChecksum, robot_message.v[0], robot_message.w[0]);
-        
-      }
-      else {
-        /* Devolve o checksum calculado se deu errado */
-        for(uint16_t i=0 ; i<sizeof(SerialMessage) ; i++){
-          Serial.printf("%p ", ((char*)&receive)[i]);
-        }
-        //Serial.println("");
-        //Serial.printf("%p\t%p\t%p\n", checksum, robot_message.v[0], robot_message.w[0]);
-      }
-
-      /* Zera o contador */
-      initCounter = 0;
-    }
+  if (Serial.available() < sizeof(SerialMessage)){
+  return;
   }
-}
 
+
+  if (Serial.read() == 'B' && Serial.read() == 'B' && Serial.read() == 'B') {
+
+    Serial.readBytes((char*)&received_message, sizeof(SerialMessage));
+    int32_t checksum = 0;
+    for(int i=0 ; i<3 ; i++){
+        checksum += received_message.v[i] + received_message.w[i];
+      }
+    int16_t limitedChecksum = (checksum >= 0 ? 1 : -1) * (abs(checksum) % 32767);
+  if (limitedChecksum == received_message.checksum) {
+    memcpy(robot_message.v,received_message.v,sizeof(received_message.v));
+    memcpy(robot_message.w,received_message.w,sizeof(received_message.w));
+    
+    
+    lastOK = millis();
+  }
+  }else{
+    Serial.read();
+  }
+    #if DEBUG
+    Serial.print("Mensagem recebida: ");
+    Serial.println(message);
+    #endif
+
+    lastOK = millis();
+}
