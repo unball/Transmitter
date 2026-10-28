@@ -1,0 +1,5 @@
+build/
+vscode/
+vscodium/
+sdkconfig
+sdkconfig.old
